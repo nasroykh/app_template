@@ -10,11 +10,18 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as NotauthAuthRegisterRouteImport } from './routes/_notauth/auth/register'
 import { Route as NotauthAuthLoginRouteImport } from './routes/_notauth/auth/login'
+import { Route as NotauthAuthForgotPasswordRouteImport } from './routes/_notauth/auth/forgot-password'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const NotauthAuthRegisterRoute = NotauthAuthRegisterRouteImport.update({
+  id: '/_notauth/auth/register',
+  path: '/auth/register',
   getParentRoute: () => rootRouteImport,
 } as any)
 const NotauthAuthLoginRoute = NotauthAuthLoginRouteImport.update({
@@ -22,31 +29,50 @@ const NotauthAuthLoginRoute = NotauthAuthLoginRouteImport.update({
   path: '/auth/login',
   getParentRoute: () => rootRouteImport,
 } as any)
+const NotauthAuthForgotPasswordRoute =
+  NotauthAuthForgotPasswordRouteImport.update({
+    id: '/_notauth/auth/forgot-password',
+    path: '/auth/forgot-password',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/auth/forgot-password': typeof NotauthAuthForgotPasswordRoute
   '/auth/login': typeof NotauthAuthLoginRoute
+  '/auth/register': typeof NotauthAuthRegisterRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/auth/forgot-password': typeof NotauthAuthForgotPasswordRoute
   '/auth/login': typeof NotauthAuthLoginRoute
+  '/auth/register': typeof NotauthAuthRegisterRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/_notauth/auth/forgot-password': typeof NotauthAuthForgotPasswordRoute
   '/_notauth/auth/login': typeof NotauthAuthLoginRoute
+  '/_notauth/auth/register': typeof NotauthAuthRegisterRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/auth/login'
+  fullPaths: '/' | '/auth/forgot-password' | '/auth/login' | '/auth/register'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/auth/login'
-  id: '__root__' | '/' | '/_notauth/auth/login'
+  to: '/' | '/auth/forgot-password' | '/auth/login' | '/auth/register'
+  id:
+    | '__root__'
+    | '/'
+    | '/_notauth/auth/forgot-password'
+    | '/_notauth/auth/login'
+    | '/_notauth/auth/register'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  NotauthAuthForgotPasswordRoute: typeof NotauthAuthForgotPasswordRoute
   NotauthAuthLoginRoute: typeof NotauthAuthLoginRoute
+  NotauthAuthRegisterRoute: typeof NotauthAuthRegisterRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -58,6 +84,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/_notauth/auth/register': {
+      id: '/_notauth/auth/register'
+      path: '/auth/register'
+      fullPath: '/auth/register'
+      preLoaderRoute: typeof NotauthAuthRegisterRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/_notauth/auth/login': {
       id: '/_notauth/auth/login'
       path: '/auth/login'
@@ -65,12 +98,21 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof NotauthAuthLoginRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/_notauth/auth/forgot-password': {
+      id: '/_notauth/auth/forgot-password'
+      path: '/auth/forgot-password'
+      fullPath: '/auth/forgot-password'
+      preLoaderRoute: typeof NotauthAuthForgotPasswordRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  NotauthAuthForgotPasswordRoute: NotauthAuthForgotPasswordRoute,
   NotauthAuthLoginRoute: NotauthAuthLoginRoute,
+  NotauthAuthRegisterRoute: NotauthAuthRegisterRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

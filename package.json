@@ -1,0 +1,26 @@
+{
+	"name": "app_template",
+	"private": true,
+	"version": "0.0.0",
+	"packageManager": "pnpm@10.0.0",
+	"scripts": {
+		"build": "pnpm --filter=db build && pnpm --filter=api build && pnpm --filter=app build",
+		"dev": "pnpm --filter=db build && concurrently -n db,api,app -c blue,green,yellow \"pnpm --filter=db dev\" \"pnpm --filter=api dev\" \"pnpm --filter=app dev\"",
+		"start": "concurrently -n db,api,app -c blue,green,yellow \"pnpm --filter=db start\" \"pnpm --filter=api start\" \"pnpm --filter=app start\"",
+		"build:db": "pnpm --filter=db build",
+		"build:api": "pnpm --filter=api build",
+		"build:app": "pnpm --filter=app build",
+		"dev:db": "pnpm --filter=db dev",
+		"dev:api": "pnpm --filter=api dev",
+		"dev:app": "pnpm --filter=app dev",
+		"start:db": "pnpm --filter=db start",
+		"start:api": "pnpm --filter=api start",
+		"start:app": "pnpm --filter=app start"
+	},
+	"devDependencies": {
+		"concurrently": "^9.2.1"
+	},
+	"engines": {
+		"node": ">=18"
+	}
+}

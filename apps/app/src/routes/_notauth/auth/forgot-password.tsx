@@ -27,7 +27,7 @@ export const Route = createFileRoute("/_notauth/auth/forgot-password")({
 
 // Form validation schemas
 const emailSchema = z.object({
-	email: z.string().email("Invalid email address"),
+	email: z.email("Invalid email address"),
 });
 
 const verificationSchema = z.object({

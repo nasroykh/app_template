@@ -23,6 +23,9 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Sun, Moon, Loader2 } from "lucide-react";
+import { useMutation } from "@tanstack/react-query";
+import { trpc } from "@/lib/trpc";
+import { toast } from "sonner";
 
 export const Route = createFileRoute("/_notauth/auth/login")({
 	component: RouteComponent,
@@ -30,13 +33,29 @@ export const Route = createFileRoute("/_notauth/auth/login")({
 
 // Form validation schema
 const loginSchema = z.object({
-	email: z.string().email("Invalid email address"),
+	email: z.email("Invalid email address"),
 	password: z.string().min(6, "Password must be at least 6 characters"),
 });
 
 type LoginFormValues = z.infer<typeof loginSchema>;
 
 function RouteComponent() {
+	const loginMutation = useMutation(
+		trpc.auth.login.mutationOptions({
+			onSuccess: (data) => {
+				toast.success("Login successful!");
+				console.log("Login successful:", data);
+			},
+			onError: (error) => {
+				toast.error("Login failed. Please check your credentials.");
+				console.error("Login failed:", error);
+			},
+			onSettled: () => {
+				setIsLoading(false);
+			},
+		})
+	);
+
 	const [isDark, setIsDark] = useState(false);
 	const [isLoading, setIsLoading] = useState(false);
 
@@ -60,10 +79,11 @@ function RouteComponent() {
 
 	const onSubmit = async (data: LoginFormValues) => {
 		setIsLoading(true);
-		// Simulate API call
-		await new Promise((resolve) => setTimeout(resolve, 1000));
-		console.log("Form submitted:", data);
-		setIsLoading(false);
+		loginMutation.mutate({
+			email: data.email,
+			password: data.password,
+			organization_slug: "",
+		});
 	};
 
 	return (

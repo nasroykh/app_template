@@ -5,7 +5,7 @@
 	"type": "module",
 	"packageManager": "pnpm@10.0.0",
 	"scripts": {
-		"dev": "vite",
+		"dev": "vite --port 33460",
 		"build": "tsc -b && vite build",
 		"lint": "eslint .",
 		"start": "vite preview"
@@ -46,6 +46,7 @@
 		"@trpc/server": "^11.7.1",
 		"@trpc/tanstack-react-query": "^11.7.1",
 		"api": "workspace:*",
+		"better-auth": "^1.4.4",
 		"class-variance-authority": "^0.7.1",
 		"clsx": "^2.1.1",
 		"cmdk": "^1.1.1",

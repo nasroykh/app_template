@@ -108,16 +108,20 @@ export const authService = {
 		password: string;
 		organization_slug: string;
 	}) {
+
+		data.email = data.email.toLowerCase().trim();
+		data.organization_slug = data.organization_slug.toLowerCase().trim();
+
 		// Find user
 		const [foundUser] = await db
 			.select({
 				id: usersTable.id,
-				deleted_at: usersTable.deleted_at,
-				password_hash: usersTable.password_hash,
 				email: usersTable.email,
 				username: usersTable.username,
+				password_hash: usersTable.password_hash,
 				role: usersTable.role,
 				email_verified_at: usersTable.email_verified_at,
+				deleted_at: usersTable.deleted_at,
 				organization_id: usersTable.organization_id,
 			})
 			.from(usersTable)

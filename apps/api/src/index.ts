@@ -1,11 +1,12 @@
 import { config as dotenvConfig } from "dotenv";
 import Fastify from "fastify";
-import { initDB, disconnectDB } from "db";
+import { initDB, disconnectDB } from "@repo/db";
 import { registerCors } from "./plugins/cors";
 import { registerSwagger } from "./plugins/swagger";
 import { registerTRPC } from "./plugins/trpc";
 import { registerWS } from "./plugins/ws";
 import { registerRedis } from "./plugins/redis";
+import { registerAuth } from "./plugins/auth";
 
 dotenvConfig({ override: true, quiet: true });
 
@@ -32,9 +33,10 @@ const start = async () => {
 		await registerSwagger(server);
 		await registerWS(server);
 		await registerRedis(server);
+		await registerAuth(server);
 
 		// Start server
-		const port = parseInt(process.env.PORT || "3001");
+		const port = parseInt(process.env.PORT || "33450");
 		const host = process.env.HOST || "0.0.0.0";
 
 		await server.listen({ port, host });

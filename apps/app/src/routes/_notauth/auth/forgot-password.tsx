@@ -1,5 +1,3 @@
-"use client";
-
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
@@ -20,6 +18,9 @@ import {
 	FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
+import { authClient } from "@/lib/auth";
+import { toast } from "sonner";
+import { cp } from "fs";
 
 export const Route = createFileRoute("/_notauth/auth/forgot-password")({
 	component: RouteComponent,
@@ -51,6 +52,7 @@ type ResetPasswordFormValues = z.infer<typeof resetPasswordSchema>;
 function RouteComponent() {
 	const [currentStep, setCurrentStep] = useState(1);
 	const [userEmail, setUserEmail] = useState("");
+	const [otp, setOtp] = useState("");
 	const [isLoading, setIsLoading] = useState(false);
 
 	const emailForm = useForm<EmailFormValues>({
@@ -70,27 +72,81 @@ function RouteComponent() {
 
 	const onEmailSubmit = async (data: EmailFormValues) => {
 		setIsLoading(true);
-		await new Promise((resolve) => setTimeout(resolve, 1000));
-		console.log("Email submitted:", data.email);
-		setUserEmail(data.email);
-		setCurrentStep(2);
-		setIsLoading(false);
+
+		try {
+			const res = await authClient.forgetPassword.emailOtp({
+				email: data.email,
+			});
+
+			if (!res.data || res.error) {
+				toast.error(
+					(res.error && res.error.message) || "Failed to send reset email"
+				);
+				return;
+			}
+
+			toast.success("Reset email sent");
+			console.log("Email submitted:", data.email);
+			setUserEmail(data.email);
+			setCurrentStep(2);
+		} catch (error) {
+			console.error("Failed to send reset email:", error);
+			toast.error("Failed to send reset email");
+		} finally {
+			setIsLoading(false);
+		}
 	};
 
 	const onVerificationSubmit = async (data: VerificationFormValues) => {
 		setIsLoading(true);
-		await new Promise((resolve) => setTimeout(resolve, 1000));
-		console.log("Verification code:", data.code);
-		setCurrentStep(3);
-		setIsLoading(false);
+
+		try {
+			const res = await authClient.emailOtp.checkVerificationOtp({
+				email: userEmail,
+				otp: data.code,
+				type: "forget-password",
+			});
+
+			if (!res.data || res.error) {
+				toast.error(
+					(res.error && res.error.message) || "Invalid verification code"
+				);
+				return;
+			}
+
+			toast.success("Verification successful");
+			setOtp(data.code);
+			setCurrentStep(3);
+		} finally {
+			setIsLoading(false);
+		}
 	};
 
 	const onResetPasswordSubmit = async (data: ResetPasswordFormValues) => {
 		setIsLoading(true);
-		await new Promise((resolve) => setTimeout(resolve, 1000));
-		console.log("Password reset:", data);
-		setCurrentStep(4);
-		setIsLoading(false);
+
+		try {
+			const res = await authClient.emailOtp.resetPassword({
+				password: data.password,
+				email: userEmail,
+				otp,
+			});
+
+			if (!res.data || res.error) {
+				toast.error(
+					(res.error && res.error.message) || "Failed to reset password"
+				);
+				return;
+			}
+
+			toast.success("Password reset successful");
+			setCurrentStep(4);
+		} catch (error) {
+			console.error("Password reset failed:", error);
+			toast.error("Password reset failed");
+		} finally {
+			setIsLoading(false);
+		}
 	};
 
 	const handleReset = () => {

@@ -1,6 +1,4 @@
-"use client";
-
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -23,8 +21,7 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Sun, Moon, Loader2 } from "lucide-react";
-import { useMutation } from "@tanstack/react-query";
-import { trpc } from "@/lib/trpc";
+import { authClient } from "@/lib/auth";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/_notauth/auth/login")({
@@ -40,24 +37,10 @@ const loginSchema = z.object({
 type LoginFormValues = z.infer<typeof loginSchema>;
 
 function RouteComponent() {
-	const loginMutation = useMutation(
-		trpc.auth.login.mutationOptions({
-			onSuccess: (data) => {
-				toast.success("Login successful!");
-				console.log("Login successful:", data);
-			},
-			onError: (error) => {
-				toast.error("Login failed. Please check your credentials.");
-				console.error("Login failed:", error);
-			},
-			onSettled: () => {
-				setIsLoading(false);
-			},
-		})
-	);
-
 	const [isDark, setIsDark] = useState(false);
 	const [isLoading, setIsLoading] = useState(false);
+
+	const navigate = useNavigate();
 
 	// Toggle dark mode
 	const toggleDarkMode = () => {
@@ -79,11 +62,27 @@ function RouteComponent() {
 
 	const onSubmit = async (data: LoginFormValues) => {
 		setIsLoading(true);
-		loginMutation.mutate({
-			email: data.email,
-			password: data.password,
-			organization_slug: "",
-		});
+
+		try {
+			const res = await authClient.signIn.email({
+				email: data.email,
+				password: data.password,
+				rememberMe: true,
+			});
+
+			if (!res.data || res.error) {
+				toast.error((res.error && res.error.message) || "Invalid credentials");
+				return;
+			}
+
+			toast.success("Login successful");
+			navigate({ to: "/" });
+		} catch (error) {
+			console.error("Login failed:", error);
+			toast.error("Login failed");
+		} finally {
+			setIsLoading(false);
+		}
 	};
 
 	return (
@@ -92,15 +91,6 @@ function RouteComponent() {
 				isDark ? "dark" : ""
 			}`}
 		>
-			{/* Dark Mode Toggle */}
-			<button
-				onClick={toggleDarkMode}
-				className="absolute top-6 right-6 p-2.5 rounded-lg border border-border hover:bg-accent transition-colors"
-				aria-label="Toggle dark mode"
-			>
-				{isDark ? <Sun className="w-5 h-5" /> : <Moon className="w-5 h-5" />}
-			</button>
-
 			{/* Login Card */}
 			<Card className="w-full max-w-sm">
 				<CardHeader className="text-center">

@@ -1,8 +1,5 @@
-"use client";
-
-import { useState } from "react";
 import type { ReactNode } from "react";
-import { Sun, Moon, ArrowLeft } from "lucide-react";
+import { ArrowLeft } from "lucide-react";
 
 interface AuthLayoutProps {
 	children: ReactNode;
@@ -19,32 +16,10 @@ export function AuthLayout({
 	onBack,
 	showBackButton = false,
 }: AuthLayoutProps) {
-	const [isDark, setIsDark] = useState(false);
-
-	const toggleDarkMode = () => {
-		setIsDark(!isDark);
-		if (!isDark) {
-			document.documentElement.classList.add("dark");
-		} else {
-			document.documentElement.classList.remove("dark");
-		}
-	};
-
 	return (
 		<div
-			className={`min-h-screen flex flex-col items-center justify-center px-4 transition-colors duration-300 ${
-				isDark ? "dark" : ""
-			}`}
+			className={`relative min-h-screen flex flex-col items-center justify-center px-4 transition-colors duration-300`}
 		>
-			{/* Dark Mode Toggle */}
-			<button
-				onClick={toggleDarkMode}
-				className="absolute top-6 right-6 p-2.5 rounded-lg border border-border hover:bg-accent transition-colors"
-				aria-label="Toggle dark mode"
-			>
-				{isDark ? <Sun className="w-5 h-5" /> : <Moon className="w-5 h-5" />}
-			</button>
-
 			{/* Back Button */}
 			{showBackButton && onBack && (
 				<button

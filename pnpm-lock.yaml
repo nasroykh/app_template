@@ -29,6 +29,9 @@ importers:
       '@fastify/websocket':
         specifier: ^11.2.0
         version: 11.2.0
+      '@repo/db':
+        specifier: workspace:*
+        version: link:../../packages/db
       '@trpc/client':
         specifier: ^11.7.1
         version: 11.7.1(@trpc/server@11.7.1(typescript@5.9.3))(typescript@5.9.3)
@@ -38,15 +41,15 @@ importers:
       argon2:
         specifier: ^0.44.0
         version: 0.44.0
+      better-auth:
+        specifier: ^1.4.4
+        version: 1.4.4(react-dom@19.2.0(react@19.2.0))(react@19.2.0)(solid-js@1.9.10)
       bullmq:
         specifier: ^5.62.0
         version: 5.63.0
       dayjs:
         specifier: ^1.11.18
         version: 1.11.19
-      db:
-        specifier: workspace:*
-        version: link:../../packages/db
       dotenv:
         specifier: ^17.2.3
         version: 17.2.3
@@ -174,6 +177,9 @@ importers:
       '@radix-ui/react-tooltip':
         specifier: ^1.2.8
         version: 1.2.8(@types/react-dom@19.2.2(@types/react@19.2.2))(@types/react@19.2.2)(react-dom@19.2.0(react@19.2.0))(react@19.2.0)
+      '@repo/db':
+        specifier: workspace:*
+        version: link:../../packages/db
       '@tailwindcss/vite':
         specifier: ^4.1.16
         version: 4.1.16(vite@7.1.12(@types/node@24.9.2)(jiti@2.6.1)(lightningcss@1.30.2)(tsx@4.20.6)(yaml@2.8.1))
@@ -198,6 +204,9 @@ importers:
       api:
         specifier: workspace:*
         version: link:../api
+      better-auth:
+        specifier: ^1.4.4
+        version: 1.4.4(react-dom@19.2.0(react@19.2.0))(react@19.2.0)(solid-js@1.9.10)
       class-variance-authority:
         specifier: ^0.7.1
         version: 0.7.1
@@ -210,9 +219,6 @@ importers:
       date-fns:
         specifier: ^4.1.0
         version: 4.1.0
-      db:
-        specifier: workspace:*
-        version: link:../../packages/db
       embla-carousel-react:
         specifier: ^8.6.0
         version: 8.6.0(react@19.2.0)
@@ -313,19 +319,6 @@ importers:
       vite:
         specifier: ^7.1.12
         version: 7.1.12(@types/node@24.9.2)(jiti@2.6.1)(lightningcss@1.30.2)(tsx@4.20.6)(yaml@2.8.1)
-
-  packages/auth:
-    dependencies:
-      better-auth:
-        specifier: ^1.4.4
-        version: 1.4.4(react-dom@19.2.0(react@19.2.0))(react@19.2.0)(solid-js@1.9.10)
-      dotenv:
-        specifier: ^17.2.3
-        version: 17.2.3
-    devDependencies:
-      db:
-        specifier: workspace:*
-        version: link:../db
 
   packages/db:
     dependencies:

@@ -1,11 +1,12 @@
 {
-	"name": "db",
+	"name": "@repo/db",
 	"version": "0.0.0",
 	"description": "",
 	"main": "dist/index.js",
 	"types": "dist/types.d.ts",
 	"exports": {
 		".": "./dist/index.js",
+		"./schema": "./dist/schema.js",
 		"./types": "./dist/types.js",
 		"./drizzle-orm": "./dist/drizzle-orm.js"
 	},

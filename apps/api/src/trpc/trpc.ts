@@ -1,5 +1,4 @@
 import { initTRPC, TRPCError } from "@trpc/server";
-import { jwtUtils } from "../utils/jwt";
 import type { Context } from "./context";
 import SuperJSON from "superjson";
 
@@ -20,7 +19,7 @@ export const authProcedure = t.procedure.use(async ({ ctx, next }) => {
 		});
 	}
 
-	token = jwtUtils.extractTokenFromHeader(token);
+	token = "";
 
 	if (!token) {
 		throw new TRPCError({
@@ -30,7 +29,7 @@ export const authProcedure = t.procedure.use(async ({ ctx, next }) => {
 	}
 
 	try {
-		const payload = jwtUtils.verifyAccessToken(token);
+		const payload = {};
 
 		return next({
 			ctx: {

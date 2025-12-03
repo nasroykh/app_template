@@ -15,7 +15,11 @@
 		"dev:app": "pnpm --filter=app dev",
 		"start:db": "pnpm --filter=db start",
 		"start:api": "pnpm --filter=api start",
-		"start:app": "pnpm --filter=app start"
+		"start:app": "pnpm --filter=app start",
+		"auth:generate": "pnpm dlx @better-auth/cli generate --config apps/api/src/utils/auth.ts --output packages/db/src/models/auth/schema.ts",
+		"db:generate": "pnpm --filter=db db:generate",
+		"db:migrate": "pnpm --filter=db db:migrate",
+		"db:push": "pnpm --filter=db db:push"
 	},
 	"devDependencies": {
 		"concurrently": "^9.2.1"

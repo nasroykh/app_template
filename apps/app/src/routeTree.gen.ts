@@ -11,7 +11,7 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as NotauthRouteImport } from './routes/_notauth'
 import { Route as AuthRouteImport } from './routes/_auth'
-import { Route as IndexRouteImport } from './routes/index'
+import { Route as AuthIndexRouteImport } from './routes/_auth/index'
 import { Route as NotauthAuthRegisterRouteImport } from './routes/_notauth/auth/register'
 import { Route as NotauthAuthLoginRouteImport } from './routes/_notauth/auth/login'
 import { Route as NotauthAuthForgotPasswordRouteImport } from './routes/_notauth/auth/forgot-password'
@@ -24,10 +24,10 @@ const AuthRoute = AuthRouteImport.update({
   id: '/_auth',
   getParentRoute: () => rootRouteImport,
 } as any)
-const IndexRoute = IndexRouteImport.update({
+const AuthIndexRoute = AuthIndexRouteImport.update({
   id: '/',
   path: '/',
-  getParentRoute: () => rootRouteImport,
+  getParentRoute: () => AuthRoute,
 } as any)
 const NotauthAuthRegisterRoute = NotauthAuthRegisterRouteImport.update({
   id: '/auth/register',
@@ -47,22 +47,22 @@ const NotauthAuthForgotPasswordRoute =
   } as any)
 
 export interface FileRoutesByFullPath {
-  '/': typeof IndexRoute
+  '/': typeof AuthIndexRoute
   '/auth/forgot-password': typeof NotauthAuthForgotPasswordRoute
   '/auth/login': typeof NotauthAuthLoginRoute
   '/auth/register': typeof NotauthAuthRegisterRoute
 }
 export interface FileRoutesByTo {
-  '/': typeof IndexRoute
+  '/': typeof AuthIndexRoute
   '/auth/forgot-password': typeof NotauthAuthForgotPasswordRoute
   '/auth/login': typeof NotauthAuthLoginRoute
   '/auth/register': typeof NotauthAuthRegisterRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
-  '/': typeof IndexRoute
-  '/_auth': typeof AuthRoute
+  '/_auth': typeof AuthRouteWithChildren
   '/_notauth': typeof NotauthRouteWithChildren
+  '/_auth/': typeof AuthIndexRoute
   '/_notauth/auth/forgot-password': typeof NotauthAuthForgotPasswordRoute
   '/_notauth/auth/login': typeof NotauthAuthLoginRoute
   '/_notauth/auth/register': typeof NotauthAuthRegisterRoute
@@ -74,17 +74,16 @@ export interface FileRouteTypes {
   to: '/' | '/auth/forgot-password' | '/auth/login' | '/auth/register'
   id:
     | '__root__'
-    | '/'
     | '/_auth'
     | '/_notauth'
+    | '/_auth/'
     | '/_notauth/auth/forgot-password'
     | '/_notauth/auth/login'
     | '/_notauth/auth/register'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
-  IndexRoute: typeof IndexRoute
-  AuthRoute: typeof AuthRoute
+  AuthRoute: typeof AuthRouteWithChildren
   NotauthRoute: typeof NotauthRouteWithChildren
 }
 
@@ -104,12 +103,12 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/': {
-      id: '/'
+    '/_auth/': {
+      id: '/_auth/'
       path: '/'
       fullPath: '/'
-      preLoaderRoute: typeof IndexRouteImport
-      parentRoute: typeof rootRouteImport
+      preLoaderRoute: typeof AuthIndexRouteImport
+      parentRoute: typeof AuthRoute
     }
     '/_notauth/auth/register': {
       id: '/_notauth/auth/register'
@@ -135,6 +134,16 @@ declare module '@tanstack/react-router' {
   }
 }
 
+interface AuthRouteChildren {
+  AuthIndexRoute: typeof AuthIndexRoute
+}
+
+const AuthRouteChildren: AuthRouteChildren = {
+  AuthIndexRoute: AuthIndexRoute,
+}
+
+const AuthRouteWithChildren = AuthRoute._addFileChildren(AuthRouteChildren)
+
 interface NotauthRouteChildren {
   NotauthAuthForgotPasswordRoute: typeof NotauthAuthForgotPasswordRoute
   NotauthAuthLoginRoute: typeof NotauthAuthLoginRoute
@@ -151,8 +160,7 @@ const NotauthRouteWithChildren =
   NotauthRoute._addFileChildren(NotauthRouteChildren)
 
 const rootRouteChildren: RootRouteChildren = {
-  IndexRoute: IndexRoute,
-  AuthRoute: AuthRoute,
+  AuthRoute: AuthRouteWithChildren,
   NotauthRoute: NotauthRouteWithChildren,
 }
 export const routeTree = rootRouteImport

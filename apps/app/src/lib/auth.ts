@@ -1,22 +1,8 @@
-import { isAuthAtom, userAtom } from "@/atoms/auth";
-import { useAtomValue } from "jotai";
-import cookies from "js-cookie";
+import { createAuthClient } from "better-auth/react";
+import { emailOTPClient, organizationClient } from "better-auth/client/plugins";
 
-export const isAuth = () => {
-	const token = cookies.get("auth_access_token");
-	if (!token) {
-		return false;
-	}
-
-	const isAuth = useAtomValue(isAuthAtom);
-	if (!isAuth) {
-		return false;
-	}
-
-	const user = useAtomValue(userAtom);
-	if (!user) {
-		return false;
-	}
-
-	return isAuth;
-};
+export const authClient = createAuthClient({
+	/** The base URL of the server (optional if you're using the same domain) */
+	baseURL: `${import.meta.env.VITE_API_URL}/auth`,
+	plugins: [organizationClient(), emailOTPClient()],
+});

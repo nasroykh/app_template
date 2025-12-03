@@ -4,7 +4,7 @@ const getSMTPEnvConfig = () => {
 	const SMTP_HOST = process.env.SMTP_HOST;
 	const SMTP_PORT = process.env.SMTP_PORT;
 	const SMTP_USER = process.env.SMTP_USER;
-	const SMTP_PASS = process.env.SMTP_PASS;
+	const SMTP_PASSWORD = process.env.SMTP_PASSWORD;
 	const SMTP_FROM = process.env.SMTP_FROM;
 
 	if (!SMTP_HOST) {
@@ -16,8 +16,8 @@ const getSMTPEnvConfig = () => {
 	if (!SMTP_USER) {
 		throw new Error("SMTP_USER is not set");
 	}
-	if (!SMTP_PASS) {
-		throw new Error("SMTP_PASS is not set");
+	if (!SMTP_PASSWORD) {
+		throw new Error("SMTP_PASSWORD is not set");
 	}
 	if (!SMTP_FROM) {
 		throw new Error("SMTP_FROM is not set");
@@ -26,12 +26,12 @@ const getSMTPEnvConfig = () => {
 		SMTP_HOST,
 		SMTP_PORT,
 		SMTP_USER,
-		SMTP_PASS,
+		SMTP_PASSWORD,
 		SMTP_FROM,
 	};
 };
 
-const { SMTP_HOST, SMTP_PORT, SMTP_USER, SMTP_PASS, SMTP_FROM } =
+const { SMTP_HOST, SMTP_PORT, SMTP_USER, SMTP_PASSWORD, SMTP_FROM } =
 	getSMTPEnvConfig();
 
 export const transporter = nodemailer.createTransport({
@@ -39,7 +39,7 @@ export const transporter = nodemailer.createTransport({
 	port: +SMTP_PORT,
 	auth: {
 		user: SMTP_USER,
-		pass: SMTP_PASS,
+		pass: SMTP_PASSWORD,
 	},
 	from: SMTP_FROM,
 });

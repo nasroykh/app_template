@@ -1,5 +1,3 @@
-"use client";
-
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
@@ -20,6 +18,8 @@ import {
 	FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
+import { authClient } from "@/lib/auth";
+import { toast } from "sonner";
 
 export const Route = createFileRoute("/_notauth/auth/register")({
 	component: RouteComponent,
@@ -67,19 +67,56 @@ function RouteComponent() {
 
 	const onRegisterSubmit = async (data: RegisterFormValues) => {
 		setIsLoading(true);
-		await new Promise((resolve) => setTimeout(resolve, 1000));
-		console.log("Registration submitted:", data);
-		setUserEmail(data.email);
-		setCurrentStep(2);
-		setIsLoading(false);
+
+		try {
+			const res = await authClient.signUp.email({
+				email: data.email,
+				name: data.name,
+				password: data.password,
+			});
+
+			if (!res.data || res.error) {
+				toast.error((res.error && res.error.message) || "Failed to register");
+				return;
+			}
+
+			console.log(res);
+			setCurrentStep(2);
+			setUserEmail(data.email);
+			toast.success("Verification email sent successfully");
+		} catch (error) {
+			toast.error("Failed to send verification email");
+			console.error("Failed to send verification email:", error);
+		} finally {
+			setIsLoading(false);
+		}
 	};
 
 	const onVerificationSubmit = async (data: VerificationFormValues) => {
 		setIsLoading(true);
-		await new Promise((resolve) => setTimeout(resolve, 1000));
-		console.log("Verification code:", data.code);
-		setCurrentStep(3);
-		setIsLoading(false);
+		try {
+			console.log(data);
+
+			const res = await authClient.emailOtp.verifyEmail({
+				email: userEmail,
+				otp: data.code,
+			});
+
+			if (!res.data || res.error) {
+				toast.error(
+					(res.error && res.error.message) || "Invalid verification code"
+				);
+				return;
+			}
+
+			console.log(res);
+			setCurrentStep(3);
+		} catch (error) {
+			toast.error("Failed to verify email");
+			console.error("Failed to verify email:", error);
+		} finally {
+			setIsLoading(false);
+		}
 	};
 
 	const handleReset = () => {

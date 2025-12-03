@@ -9,31 +9,41 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as NotauthRouteImport } from './routes/_notauth'
+import { Route as AuthRouteImport } from './routes/_auth'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as NotauthAuthRegisterRouteImport } from './routes/_notauth/auth/register'
 import { Route as NotauthAuthLoginRouteImport } from './routes/_notauth/auth/login'
 import { Route as NotauthAuthForgotPasswordRouteImport } from './routes/_notauth/auth/forgot-password'
 
+const NotauthRoute = NotauthRouteImport.update({
+  id: '/_notauth',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AuthRoute = AuthRouteImport.update({
+  id: '/_auth',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
 const NotauthAuthRegisterRoute = NotauthAuthRegisterRouteImport.update({
-  id: '/_notauth/auth/register',
+  id: '/auth/register',
   path: '/auth/register',
-  getParentRoute: () => rootRouteImport,
+  getParentRoute: () => NotauthRoute,
 } as any)
 const NotauthAuthLoginRoute = NotauthAuthLoginRouteImport.update({
-  id: '/_notauth/auth/login',
+  id: '/auth/login',
   path: '/auth/login',
-  getParentRoute: () => rootRouteImport,
+  getParentRoute: () => NotauthRoute,
 } as any)
 const NotauthAuthForgotPasswordRoute =
   NotauthAuthForgotPasswordRouteImport.update({
-    id: '/_notauth/auth/forgot-password',
+    id: '/auth/forgot-password',
     path: '/auth/forgot-password',
-    getParentRoute: () => rootRouteImport,
+    getParentRoute: () => NotauthRoute,
   } as any)
 
 export interface FileRoutesByFullPath {
@@ -51,6 +61,8 @@ export interface FileRoutesByTo {
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/_auth': typeof AuthRoute
+  '/_notauth': typeof NotauthRouteWithChildren
   '/_notauth/auth/forgot-password': typeof NotauthAuthForgotPasswordRoute
   '/_notauth/auth/login': typeof NotauthAuthLoginRoute
   '/_notauth/auth/register': typeof NotauthAuthRegisterRoute
@@ -63,6 +75,8 @@ export interface FileRouteTypes {
   id:
     | '__root__'
     | '/'
+    | '/_auth'
+    | '/_notauth'
     | '/_notauth/auth/forgot-password'
     | '/_notauth/auth/login'
     | '/_notauth/auth/register'
@@ -70,13 +84,26 @@ export interface FileRouteTypes {
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
-  NotauthAuthForgotPasswordRoute: typeof NotauthAuthForgotPasswordRoute
-  NotauthAuthLoginRoute: typeof NotauthAuthLoginRoute
-  NotauthAuthRegisterRoute: typeof NotauthAuthRegisterRoute
+  AuthRoute: typeof AuthRoute
+  NotauthRoute: typeof NotauthRouteWithChildren
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/_notauth': {
+      id: '/_notauth'
+      path: ''
+      fullPath: ''
+      preLoaderRoute: typeof NotauthRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/_auth': {
+      id: '/_auth'
+      path: ''
+      fullPath: ''
+      preLoaderRoute: typeof AuthRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/': {
       id: '/'
       path: '/'
@@ -89,30 +116,44 @@ declare module '@tanstack/react-router' {
       path: '/auth/register'
       fullPath: '/auth/register'
       preLoaderRoute: typeof NotauthAuthRegisterRouteImport
-      parentRoute: typeof rootRouteImport
+      parentRoute: typeof NotauthRoute
     }
     '/_notauth/auth/login': {
       id: '/_notauth/auth/login'
       path: '/auth/login'
       fullPath: '/auth/login'
       preLoaderRoute: typeof NotauthAuthLoginRouteImport
-      parentRoute: typeof rootRouteImport
+      parentRoute: typeof NotauthRoute
     }
     '/_notauth/auth/forgot-password': {
       id: '/_notauth/auth/forgot-password'
       path: '/auth/forgot-password'
       fullPath: '/auth/forgot-password'
       preLoaderRoute: typeof NotauthAuthForgotPasswordRouteImport
-      parentRoute: typeof rootRouteImport
+      parentRoute: typeof NotauthRoute
     }
   }
 }
 
-const rootRouteChildren: RootRouteChildren = {
-  IndexRoute: IndexRoute,
+interface NotauthRouteChildren {
+  NotauthAuthForgotPasswordRoute: typeof NotauthAuthForgotPasswordRoute
+  NotauthAuthLoginRoute: typeof NotauthAuthLoginRoute
+  NotauthAuthRegisterRoute: typeof NotauthAuthRegisterRoute
+}
+
+const NotauthRouteChildren: NotauthRouteChildren = {
   NotauthAuthForgotPasswordRoute: NotauthAuthForgotPasswordRoute,
   NotauthAuthLoginRoute: NotauthAuthLoginRoute,
   NotauthAuthRegisterRoute: NotauthAuthRegisterRoute,
+}
+
+const NotauthRouteWithChildren =
+  NotauthRoute._addFileChildren(NotauthRouteChildren)
+
+const rootRouteChildren: RootRouteChildren = {
+  IndexRoute: IndexRoute,
+  AuthRoute: AuthRoute,
+  NotauthRoute: NotauthRouteWithChildren,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

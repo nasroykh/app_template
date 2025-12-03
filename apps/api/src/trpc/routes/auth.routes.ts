@@ -12,7 +12,7 @@ const authRouter = router({
 				email: z.email(),
 				username: z.string().min(3),
 				password: z.string().min(8),
-				organization_slug: z.string(),
+				organization_slug: z.string().optional(),
 			})
 		)
 		.mutation(async ({ input }) => {

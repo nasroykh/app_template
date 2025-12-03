@@ -22,7 +22,7 @@ const wsClient = createWSClient({
 				: import.meta.env.VITE_API_WS_URL || "ws://localhost:3001"
 		}`.replace(/\/+$/, "") + "/trpc",
 	connectionParams: () => {
-		const token = cookies.get("auth_token");
+		const token = cookies.get("auth_access_token");
 		return token ? { Authorization: `Bearer ${token}` } : {};
 	},
 	onOpen() {
@@ -52,7 +52,7 @@ const trpcClient = createTRPCClient<AppRouter>({
 					}`.replace(/\/+$/, "") + "/trpc",
 				maxURLLength: 2000,
 				headers: () => {
-					const token = cookies.get("auth_token");
+					const token = cookies.get("auth_access_token");
 
 					return token ? { Authorization: `Bearer ${token}` } : {};
 				},

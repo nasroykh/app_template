@@ -6,6 +6,7 @@ import { jwtUtils } from "../utils/jwt";
 import { TRPCError } from "@trpc/server";
 import { isEmailValid } from "../utils/validators";
 import { generateVerificationCode } from "../utils/generators";
+import { transporter } from "../config/nodemailer";
 
 export const authService = {
 	/**
@@ -15,11 +16,10 @@ export const authService = {
 		email: string;
 		username: string;
 		password: string;
-		organization_slug: string;
+		organization_slug?: string;
 	}) {
 		data.email = data.email.toLowerCase().trim();
 		data.username = data.username.toLowerCase().trim();
-		data.organization_slug = data.organization_slug.toLowerCase().trim();
 
 		if (!isEmailValid(data.email))
 			throw new TRPCError({
@@ -27,40 +27,67 @@ export const authService = {
 				message: "Invalid email",
 			});
 
-		const [existingOrganization] = await db
-			.select({ id: organizationsTable.id })
-			.from(organizationsTable)
-			.where(eq(organizationsTable.slug, data.organization_slug))
-			.limit(1);
+		let organizationId: string | undefined;
 
-		if (!existingOrganization)
-			throw new TRPCError({
-				code: "NOT_FOUND",
-				message: "Organization not found",
-			});
+		if (data.organization_slug) {
+			const [existingOrganization] = await db
+				.select({ id: organizationsTable.id })
+				.from(organizationsTable)
+				.where(
+					eq(
+						organizationsTable.slug,
+						data.organization_slug.toLowerCase().trim()
+					)
+				)
+				.limit(1);
+
+			if (!existingOrganization)
+				throw new TRPCError({
+					code: "NOT_FOUND",
+					message: "Organization not found",
+				});
+
+			organizationId = existingOrganization.id;
+		} else {
+			const organizationSlug = `${data.username}-${dayjs().unix() % 100000000}`;
+			const organizationName = `${data.username}'s Organization`;
+
+			const [createdOrganization] = await db
+				.insert(organizationsTable)
+				.values({
+					slug: organizationSlug,
+					name: organizationName,
+				})
+				.returning({ id: organizationsTable.id });
+
+			if (!createdOrganization)
+				throw new TRPCError({
+					code: "INTERNAL_SERVER_ERROR",
+					message: "Failed to create organization",
+				});
+
+			organizationId = createdOrganization.id;
+		}
 
 		// Check if user already exists
 		const [existingUser] = await db
-			.select()
+			.select({
+				id: usersTable.id,
+			})
 			.from(usersTable)
-			.innerJoin(
-				organizationsTable,
-				eq(usersTable.organization_id, organizationsTable.id)
-			)
 			.where(
 				and(
 					eq(usersTable.email, data.email),
-					eq(organizationsTable.slug, data.organization_slug)
+					eq(usersTable.organization_id, organizationId)
 				)
 			)
 			.limit(1);
 
-		if (existingUser) {
+		if (existingUser)
 			throw new TRPCError({
 				code: "CONFLICT",
 				message: "User with this email already exists",
 			});
-		}
 
 		// Hash password
 		const password_hash = await argon2.hash(data.password);
@@ -72,21 +99,27 @@ export const authService = {
 				email: data.email,
 				username: data.username,
 				password_hash,
-				organization_id: existingOrganization.id,
+				organization_id: organizationId,
 				user_details: {},
-				role: "user",
+				role: data.organization_slug ? "user" : "admin",
 			})
 			.returning();
 
 		// Generate verification code
 		const verificationCode = generateVerificationCode();
-		const expiresAt = dayjs().add(2, "hour").toDate();
+		const expiresAt = dayjs().add(3, "hour").toDate();
 
 		await db.insert(verificationCodesTable).values({
 			code: verificationCode,
 			purpose: "email_verification",
 			expires_at: expiresAt,
 			user_id: createdUser.id,
+		});
+
+		await transporter.sendMail({
+			to: createdUser.email,
+			subject: "Verify your email",
+			html: `<p>Your verification code is <strong>${verificationCode}</strong>.</p><p>It will expire in 3 hours.</p>`,
 		});
 
 		return {
@@ -106,11 +139,30 @@ export const authService = {
 	async login(data: {
 		email: string;
 		password: string;
-		organization_slug: string;
+		organization_slug?: string;
 	}) {
+		let organizationId: string | undefined;
 
-		data.email = data.email.toLowerCase().trim();
-		data.organization_slug = data.organization_slug.toLowerCase().trim();
+		if (data.organization_slug) {
+			const [existingOrganization] = await db
+				.select({ id: organizationsTable.id })
+				.from(organizationsTable)
+				.where(
+					eq(
+						organizationsTable.slug,
+						data.organization_slug.toLowerCase().trim()
+					)
+				)
+				.limit(1);
+
+			if (!existingOrganization)
+				throw new TRPCError({
+					code: "NOT_FOUND",
+					message: "Organization not found",
+				});
+
+			organizationId = existingOrganization.id;
+		}
 
 		// Find user
 		const [foundUser] = await db
@@ -125,14 +177,12 @@ export const authService = {
 				organization_id: usersTable.organization_id,
 			})
 			.from(usersTable)
-			.innerJoin(
-				organizationsTable,
-				eq(usersTable.organization_id, organizationsTable.id)
-			)
 			.where(
 				and(
 					eq(usersTable.email, data.email),
-					eq(organizationsTable.slug, data.organization_slug)
+					organizationId
+						? eq(usersTable.organization_id, organizationId)
+						: undefined
 				)
 			)
 			.limit(1);
@@ -293,21 +343,40 @@ export const authService = {
 	/**
 	 * Request password reset
 	 */
-	async requestPasswordReset(email: string, organization_slug: string) {
+	async requestPasswordReset(email: string, organization_slug?: string) {
+		let organizationId: string | undefined;
+
+		if (organization_slug) {
+			const [existingOrganization] = await db
+				.select({ id: organizationsTable.id })
+				.from(organizationsTable)
+				.where(
+					eq(organizationsTable.slug, organization_slug.toLowerCase().trim())
+				)
+				.limit(1);
+
+			if (!existingOrganization)
+				throw new TRPCError({
+					code: "NOT_FOUND",
+					message: "Organization not found",
+				});
+
+			organizationId = existingOrganization.id;
+		}
+
 		// Find user
 		const [foundUser] = await db
 			.select({
 				id: usersTable.id,
+				email: usersTable.email,
 			})
 			.from(usersTable)
-			.innerJoin(
-				organizationsTable,
-				eq(usersTable.organization_id, organizationsTable.id)
-			)
 			.where(
 				and(
 					eq(usersTable.email, email),
-					eq(organizationsTable.slug, organization_slug)
+					organizationId
+						? eq(usersTable.organization_id, organizationId)
+						: undefined
 				)
 			)
 			.limit(1);
@@ -321,14 +390,27 @@ export const authService = {
 		const resetCode = generateVerificationCode();
 		const expiresAt = dayjs().add(1, "hour").toDate();
 
-		await db.insert(verificationCodesTable).values({
-			code: resetCode,
-			purpose: "password_reset",
-			expires_at: expiresAt,
-			user_id: foundUser.id,
-		});
+		const [createdVerificationCode] = await db
+			.insert(verificationCodesTable)
+			.values({
+				code: resetCode,
+				purpose: "password_reset",
+				expires_at: expiresAt,
+				user_id: foundUser.id,
+			})
+			.returning({ code: verificationCodesTable.code });
 
-		//TODO: Send reset code via email
+		if (!createdVerificationCode)
+			throw new TRPCError({
+				code: "INTERNAL_SERVER_ERROR",
+				message: "Failed to create verification code",
+			});
+
+		await transporter.sendMail({
+			to: foundUser.email,
+			subject: "Reset your password",
+			html: `<p>Your reset code is <strong>${createdVerificationCode.code}</strong>.</p><p>It will expire in 1 hour.</p>`,
+		});
 
 		return {
 			success: true,
@@ -349,24 +431,16 @@ export const authService = {
 		const [foundUser] = await db
 			.select({
 				id: usersTable.id,
+				verification_code_id: verificationCodesTable.id,
 			})
 			.from(usersTable)
-			.where(and(eq(usersTable.id, data.userId)))
-			.limit(1);
-
-		if (!foundUser)
-			throw new TRPCError({
-				code: "BAD_REQUEST",
-				message: "Invalid reset code",
-			});
-
-		// Find verification code
-		const [verificationCodeFound] = await db
-			.select({ id: verificationCodesTable.id })
-			.from(verificationCodesTable)
+			.innerJoin(
+				verificationCodesTable,
+				eq(verificationCodesTable.user_id, usersTable.id)
+			)
 			.where(
 				and(
-					eq(verificationCodesTable.user_id, foundUser.id),
+					eq(usersTable.id, data.userId),
 					eq(verificationCodesTable.code, data.code),
 					eq(verificationCodesTable.purpose, "password_reset"),
 					gt(verificationCodesTable.expires_at, new Date())
@@ -374,10 +448,10 @@ export const authService = {
 			)
 			.limit(1);
 
-		if (!verificationCodeFound)
+		if (!foundUser)
 			throw new TRPCError({
 				code: "BAD_REQUEST",
-				message: "Invalid or expired reset code",
+				message: "Invalid reset code",
 			});
 
 		// Hash new password
@@ -394,7 +468,7 @@ export const authService = {
 		// Delete verification code
 		await db
 			.delete(verificationCodesTable)
-			.where(eq(verificationCodesTable.id, verificationCodeFound.id));
+			.where(eq(verificationCodesTable.id, foundUser.verification_code_id));
 
 		return { success: true };
 	},
@@ -404,7 +478,18 @@ export const authService = {
 	 */
 	async me(userId: string) {
 		const [foundUser] = await db
-			.select()
+			.select({
+				id: usersTable.id,
+				email: usersTable.email,
+				username: usersTable.username,
+				role: usersTable.role,
+				status: usersTable.status,
+				email_verified_at: usersTable.email_verified_at,
+				last_seen_at: usersTable.last_seen_at,
+				user_details: usersTable.user_details,
+				organization_id: usersTable.organization_id,
+				created_at: usersTable.created_at,
+			})
 			.from(usersTable)
 			.where(eq(usersTable.id, userId))
 			.limit(1);

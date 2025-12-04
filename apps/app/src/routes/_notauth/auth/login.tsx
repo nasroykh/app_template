@@ -20,7 +20,7 @@ import {
 	FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import { Sun, Moon, Loader2 } from "lucide-react";
+import { Loader2 } from "lucide-react";
 import { authClient } from "@/lib/auth";
 import { toast } from "sonner";
 
@@ -37,20 +37,9 @@ const loginSchema = z.object({
 type LoginFormValues = z.infer<typeof loginSchema>;
 
 function RouteComponent() {
-	const [isDark, setIsDark] = useState(false);
 	const [isLoading, setIsLoading] = useState(false);
 
 	const navigate = useNavigate();
-
-	// Toggle dark mode
-	const toggleDarkMode = () => {
-		setIsDark(!isDark);
-		if (!isDark) {
-			document.documentElement.classList.add("dark");
-		} else {
-			document.documentElement.classList.remove("dark");
-		}
-	};
 
 	const form = useForm<LoginFormValues>({
 		resolver: zodResolver(loginSchema),
@@ -86,11 +75,7 @@ function RouteComponent() {
 	};
 
 	return (
-		<div
-			className={`min-h-screen flex flex-col items-center justify-center px-4 transition-colors duration-300 ${
-				isDark ? "dark" : ""
-			}`}
-		>
+		<div className="min-h-screen flex flex-col items-center justify-center px-4 transition-colors duration-300">
 			{/* Login Card */}
 			<Card className="w-full max-w-sm">
 				<CardHeader className="text-center">

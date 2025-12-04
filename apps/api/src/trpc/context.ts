@@ -1,6 +1,15 @@
 import { type CreateFastifyContextOptions } from "@trpc/server/adapters/fastify";
+import { auth } from "../utils/auth";
 
-export function createContext({ req, res, info }: CreateFastifyContextOptions) {
+export async function createContext({
+	req,
+	res,
+	info,
+}: CreateFastifyContextOptions) {
+	const session = await auth.api.getSession({
+		headers: req?.headers,
+	});
+
 	return {
 		req: {
 			...req,
@@ -12,7 +21,7 @@ export function createContext({ req, res, info }: CreateFastifyContextOptions) {
 		},
 		res,
 		redis: req?.server?.redis,
-		user: undefined,
+		user: session?.user ?? null,
 	};
 }
 

@@ -20,7 +20,6 @@ import {
 import { Input } from "@/components/ui/input";
 import { authClient } from "@/lib/auth";
 import { toast } from "sonner";
-import { cp } from "fs";
 
 export const Route = createFileRoute("/_notauth/auth/forgot-password")({
 	component: RouteComponent,

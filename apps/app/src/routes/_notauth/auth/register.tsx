@@ -80,7 +80,6 @@ function RouteComponent() {
 				return;
 			}
 
-			console.log(res);
 			setCurrentStep(2);
 			setUserEmail(data.email);
 			toast.success("Verification email sent successfully");

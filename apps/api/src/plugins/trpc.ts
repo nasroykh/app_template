@@ -14,7 +14,7 @@ export const registerTRPC = async (server: FastifyInstance) => {
 			pingMs: 30000,
 			pongWaitMs: 5000,
 		},
-		prefix: "/trpc",
+		prefix: "/api/trpc",
 		trpcOptions: {
 			router: appRouter,
 			createContext,

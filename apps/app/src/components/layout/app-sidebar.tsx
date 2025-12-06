@@ -1,8 +1,6 @@
 import { Link, useLocation } from "@tanstack/react-router";
 import {
 	Home,
-	BarChart3,
-	Users,
 	Settings,
 	LogOut,
 	Sparkles,
@@ -41,18 +39,29 @@ import { useAtom } from "jotai";
 import { authClient } from "@/lib/auth";
 import { toast } from "sonner";
 import { useNavigate } from "@tanstack/react-router";
+import { useState, useEffect } from "react";
 
-const navItems = [
-	{ title: "Dashboard", icon: Home, href: "/" as const },
-	{ title: "Analytics", icon: BarChart3, href: "#" as const },
-	{ title: "Users", icon: Users, href: "#" as const },
-	{ title: "Settings", icon: Settings, href: "#" as const },
-];
+const navItems = [{ title: "Dashboard", icon: Home, href: "/" }];
 
 export function AppSidebar() {
 	const location = useLocation();
 	const navigate = useNavigate();
 	const [theme, setTheme] = useAtom(themeAtom);
+	const [user, setUser] = useState<{
+		name: string;
+		email: string;
+		image?: string | null;
+	} | null>(null);
+
+	useEffect(() => {
+		const loadUser = async () => {
+			const { data } = await authClient.getSession();
+			if (data?.user) {
+				setUser(data.user);
+			}
+		};
+		loadUser();
+	}, []);
 
 	const themeOptions: { value: Theme; label: string; icon: typeof Sun }[] = [
 		{ value: "light", label: "Light", icon: Sun },
@@ -105,11 +114,15 @@ export function AppSidebar() {
 							{navItems.map((item) => (
 								<SidebarMenuItem key={item.title}>
 									<SidebarMenuButton
-										asChild={item.href === "/"}
-										isActive={location.pathname === item.href}
+										asChild={item.href !== "#"}
+										isActive={
+											item.href === "/"
+												? location.pathname === item.href
+												: location.pathname.startsWith(item.href)
+										}
 										tooltip={item.title}
 									>
-										{item.href === "/" ? (
+										{item.href !== "#" ? (
 											<Link to={item.href}>
 												<item.icon />
 												<span>{item.title}</span>
@@ -136,15 +149,23 @@ export function AppSidebar() {
 							<DropdownMenuTrigger asChild>
 								<SidebarMenuButton size="lg">
 									<Avatar className="size-8">
-										<AvatarImage src="/avatar.png" alt="User avatar" />
+										<AvatarImage
+											src={user?.image || undefined}
+											alt="User avatar"
+										/>
 										<AvatarFallback className="bg-primary/10 text-primary text-xs">
-											JD
+											{user?.name
+												?.split(" ")
+												.map((n) => n[0])
+												.join("")
+												.toUpperCase()
+												.slice(0, 2) || "U"}
 										</AvatarFallback>
 									</Avatar>
 									<div className="flex flex-col gap-0.5 leading-none text-left">
-										<span className="font-medium">John Doe</span>
+										<span className="font-medium">{user?.name || "User"}</span>
 										<span className="text-xs text-muted-foreground">
-											john@example.com
+											{user?.email || ""}
 										</span>
 									</div>
 								</SidebarMenuButton>
@@ -154,9 +175,11 @@ export function AppSidebar() {
 								align="start"
 								className="w-[--radix-dropdown-menu-trigger-width]"
 							>
-								<DropdownMenuItem>
-									<Settings className="mr-2 size-4" />
-									Settings
+								<DropdownMenuItem asChild>
+									<Link to="/settings">
+										<Settings className="mr-2 size-4" />
+										Settings
+									</Link>
 								</DropdownMenuItem>
 								<DropdownMenuSub>
 									<DropdownMenuSubTrigger>

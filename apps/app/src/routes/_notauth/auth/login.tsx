@@ -22,13 +22,13 @@ import {
 import { Input } from "@/components/ui/input";
 import { Loader2 } from "lucide-react";
 import { authClient } from "@/lib/auth";
+import { ensureActiveOrganization } from "@/lib/organization";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/_notauth/auth/login")({
 	component: RouteComponent,
 });
 
-// Form validation schema
 const loginSchema = z.object({
 	email: z.email("Invalid email address"),
 	password: z.string().min(6, "Password must be at least 6 characters"),
@@ -38,7 +38,6 @@ type LoginFormValues = z.infer<typeof loginSchema>;
 
 function RouteComponent() {
 	const [isLoading, setIsLoading] = useState(false);
-
 	const navigate = useNavigate();
 
 	const form = useForm<LoginFormValues>({
@@ -63,6 +62,9 @@ function RouteComponent() {
 				toast.error((res.error && res.error.message) || "Invalid credentials");
 				return;
 			}
+
+			// Ensure user has an active organization
+			await ensureActiveOrganization(res.data.user.name);
 
 			toast.success("Login successful");
 			navigate({ to: "/" });

@@ -1,4 +1,4 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -30,6 +30,9 @@ const registerSchema = z
 	.object({
 		name: z.string().min(2, "Name must be at least 2 characters"),
 		email: z.email("Invalid email address"),
+		organizationName: z
+			.string()
+			.min(2, "Organization name must be at least 2 characters"),
 		password: z.string().min(8, "Password must be at least 8 characters"),
 		confirmPassword: z.string(),
 	})
@@ -46,15 +49,19 @@ type RegisterFormValues = z.infer<typeof registerSchema>;
 type VerificationFormValues = z.infer<typeof verificationSchema>;
 
 function RouteComponent() {
+	const navigate = useNavigate();
 	const [currentStep, setCurrentStep] = useState(1);
 	const [userEmail, setUserEmail] = useState("");
+	const [orgName, setOrgName] = useState("");
 	const [isLoading, setIsLoading] = useState(false);
+	const [isResending, setIsResending] = useState(false);
 
 	const registerForm = useForm<RegisterFormValues>({
 		resolver: zodResolver(registerSchema),
 		defaultValues: {
 			name: "",
 			email: "",
+			organizationName: "",
 			password: "",
 			confirmPassword: "",
 		},
@@ -82,6 +89,7 @@ function RouteComponent() {
 
 			setCurrentStep(2);
 			setUserEmail(data.email);
+			setOrgName(data.organizationName);
 			toast.success("Verification email sent successfully");
 		} catch (error) {
 			toast.error("Failed to send verification email");
@@ -94,8 +102,6 @@ function RouteComponent() {
 	const onVerificationSubmit = async (data: VerificationFormValues) => {
 		setIsLoading(true);
 		try {
-			console.log(data);
-
 			const res = await authClient.emailOtp.verifyEmail({
 				email: userEmail,
 				otp: data.code,
@@ -108,7 +114,28 @@ function RouteComponent() {
 				return;
 			}
 
-			console.log(res);
+			// Auto-create organization after email verification
+			const slug = orgName
+				.toLowerCase()
+				.replace(/[^a-z0-9]+/g, "-")
+				.replace(/^-|-$/g, "");
+
+			const orgRes = await authClient.organization.create({
+				name: orgName,
+				slug: `${slug}-${Date.now()}`,
+				userId: res.data.user.id,
+			});
+
+			if (orgRes.error) {
+				console.error("Failed to create organization:", orgRes.error);
+				// Still proceed - user can create org later
+			} else {
+				// Set as active organization
+				await authClient.organization.setActive({
+					organizationId: orgRes.data.id,
+				});
+			}
+
 			setCurrentStep(3);
 		} catch (error) {
 			toast.error("Failed to verify email");
@@ -118,11 +145,24 @@ function RouteComponent() {
 		}
 	};
 
-	const handleReset = () => {
-		setCurrentStep(1);
-		registerForm.reset();
-		verificationForm.reset();
-		setUserEmail("");
+	const handleResendOTP = async () => {
+		if (!userEmail || isResending) return;
+		setIsResending(true);
+		try {
+			const res = await authClient.emailOtp.sendVerificationOtp({
+				email: userEmail,
+				type: "email-verification",
+			});
+			if (res.error) {
+				toast.error(res.error.message || "Failed to resend code");
+				return;
+			}
+			toast.success("Verification code resent");
+		} catch {
+			toast.error("Failed to resend code");
+		} finally {
+			setIsResending(false);
+		}
 	};
 
 	return (
@@ -192,6 +232,24 @@ function RouteComponent() {
 							/>
 							<FormField
 								control={registerForm.control}
+								name="organizationName"
+								render={({ field }) => (
+									<FormItem>
+										<FormLabel>Organization Name</FormLabel>
+										<FormControl>
+											<Input
+												placeholder="My Company"
+												type="text"
+												{...field}
+												disabled={isLoading}
+											/>
+										</FormControl>
+										<FormMessage />
+									</FormItem>
+								)}
+							/>
+							<FormField
+								control={registerForm.control}
 								name="password"
 								render={({ field }) => (
 									<FormItem>
@@ -245,11 +303,12 @@ function RouteComponent() {
 								<>
 									Didn't receive a code?{" "}
 									<button
-										onClick={() => console.log("Resend code")}
-										disabled={isLoading}
+										type="button"
+										onClick={handleResendOTP}
+										disabled={isLoading || isResending}
 										className="text-primary hover:underline font-medium disabled:opacity-50"
 									>
-										Resend
+										{isResending ? "Sending..." : "Resend"}
 									</button>
 								</>
 							}
@@ -288,14 +347,10 @@ function RouteComponent() {
 					<SuccessStep
 						email={userEmail}
 						title="Account created!"
-						message="Welcome! Your email has been verified and your account is ready to use."
+						message="Welcome! Your organization has been created and you're now the owner."
 						primaryAction={{
 							label: "Go to login",
-							onClick: () => (window.location.href = "/auth/login"),
-						}}
-						secondaryAction={{
-							label: "Create another account",
-							onClick: handleReset,
+							onClick: () => navigate({ to: "/auth/login" }),
 						}}
 					/>
 				</StepWrapper>

@@ -1,13 +1,13 @@
 // packages/auth/src/server.ts
 import { betterAuth } from "better-auth";
 import { drizzleAdapter } from "better-auth/adapters/drizzle";
-import { emailOTP, organization } from "better-auth/plugins";
+import { admin, emailOTP, organization } from "better-auth/plugins";
 import Stripe from "stripe";
 import { stripe } from "@better-auth/stripe";
 
 import { db } from "@repo/db";
 import * as schema from "@repo/db/schema";
-import { sendOTPEmail } from "../services/auth.service";
+import { sendOTPEmail, sendInvitationEmail } from "../services/auth.service";
 
 const stripeClient = new Stripe(process.env.STRIPE_SECRET_KEY!, {
 	apiVersion: "2025-11-17.clover", // Latest API version as of Stripe SDK v20.0.0
@@ -19,17 +19,22 @@ export const auth = betterAuth({
 		schema,
 	}),
 	plugins: [
-		organization(),
+		admin(),
+		organization({
+			async sendInvitationEmail(data) {
+				const inviteLink = `${process.env.APP_URL}/invite/${data.id}`;
+				sendInvitationEmail(
+					data.email,
+					data.inviter.user.name,
+					data.organization.name,
+					inviteLink
+				);
+			},
+		}),
 		emailOTP({
 			overrideDefaultEmailVerification: true,
-			async sendVerificationOTP({ email, otp, type }) {
-				if (type === "sign-in") {
-					sendOTPEmail(email, otp);
-				} else if (type === "email-verification") {
-					sendOTPEmail(email, otp);
-				} else {
-					sendOTPEmail(email, otp);
-				}
+			async sendVerificationOTP({ email, otp }) {
+				sendOTPEmail(email, otp);
 			},
 		}),
 		stripe({

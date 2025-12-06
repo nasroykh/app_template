@@ -12,9 +12,11 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as NotauthRouteImport } from './routes/_notauth'
 import { Route as AuthRouteImport } from './routes/_auth'
 import { Route as AuthIndexRouteImport } from './routes/_auth/index'
+import { Route as AuthSettingsRouteImport } from './routes/_auth/settings'
 import { Route as NotauthAuthRegisterRouteImport } from './routes/_notauth/auth/register'
 import { Route as NotauthAuthLoginRouteImport } from './routes/_notauth/auth/login'
 import { Route as NotauthAuthForgotPasswordRouteImport } from './routes/_notauth/auth/forgot-password'
+import { Route as AuthInviteInviteIdRouteImport } from './routes/_auth/invite/$inviteId'
 
 const NotauthRoute = NotauthRouteImport.update({
   id: '/_notauth',
@@ -27,6 +29,11 @@ const AuthRoute = AuthRouteImport.update({
 const AuthIndexRoute = AuthIndexRouteImport.update({
   id: '/',
   path: '/',
+  getParentRoute: () => AuthRoute,
+} as any)
+const AuthSettingsRoute = AuthSettingsRouteImport.update({
+  id: '/settings',
+  path: '/settings',
   getParentRoute: () => AuthRoute,
 } as any)
 const NotauthAuthRegisterRoute = NotauthAuthRegisterRouteImport.update({
@@ -45,15 +52,24 @@ const NotauthAuthForgotPasswordRoute =
     path: '/auth/forgot-password',
     getParentRoute: () => NotauthRoute,
   } as any)
+const AuthInviteInviteIdRoute = AuthInviteInviteIdRouteImport.update({
+  id: '/invite/$inviteId',
+  path: '/invite/$inviteId',
+  getParentRoute: () => AuthRoute,
+} as any)
 
 export interface FileRoutesByFullPath {
+  '/settings': typeof AuthSettingsRoute
   '/': typeof AuthIndexRoute
+  '/invite/$inviteId': typeof AuthInviteInviteIdRoute
   '/auth/forgot-password': typeof NotauthAuthForgotPasswordRoute
   '/auth/login': typeof NotauthAuthLoginRoute
   '/auth/register': typeof NotauthAuthRegisterRoute
 }
 export interface FileRoutesByTo {
+  '/settings': typeof AuthSettingsRoute
   '/': typeof AuthIndexRoute
+  '/invite/$inviteId': typeof AuthInviteInviteIdRoute
   '/auth/forgot-password': typeof NotauthAuthForgotPasswordRoute
   '/auth/login': typeof NotauthAuthLoginRoute
   '/auth/register': typeof NotauthAuthRegisterRoute
@@ -62,21 +78,37 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/_auth': typeof AuthRouteWithChildren
   '/_notauth': typeof NotauthRouteWithChildren
+  '/_auth/settings': typeof AuthSettingsRoute
   '/_auth/': typeof AuthIndexRoute
+  '/_auth/invite/$inviteId': typeof AuthInviteInviteIdRoute
   '/_notauth/auth/forgot-password': typeof NotauthAuthForgotPasswordRoute
   '/_notauth/auth/login': typeof NotauthAuthLoginRoute
   '/_notauth/auth/register': typeof NotauthAuthRegisterRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/auth/forgot-password' | '/auth/login' | '/auth/register'
+  fullPaths:
+    | '/settings'
+    | '/'
+    | '/invite/$inviteId'
+    | '/auth/forgot-password'
+    | '/auth/login'
+    | '/auth/register'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/auth/forgot-password' | '/auth/login' | '/auth/register'
+  to:
+    | '/settings'
+    | '/'
+    | '/invite/$inviteId'
+    | '/auth/forgot-password'
+    | '/auth/login'
+    | '/auth/register'
   id:
     | '__root__'
     | '/_auth'
     | '/_notauth'
+    | '/_auth/settings'
     | '/_auth/'
+    | '/_auth/invite/$inviteId'
     | '/_notauth/auth/forgot-password'
     | '/_notauth/auth/login'
     | '/_notauth/auth/register'
@@ -110,6 +142,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthIndexRouteImport
       parentRoute: typeof AuthRoute
     }
+    '/_auth/settings': {
+      id: '/_auth/settings'
+      path: '/settings'
+      fullPath: '/settings'
+      preLoaderRoute: typeof AuthSettingsRouteImport
+      parentRoute: typeof AuthRoute
+    }
     '/_notauth/auth/register': {
       id: '/_notauth/auth/register'
       path: '/auth/register'
@@ -131,15 +170,26 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof NotauthAuthForgotPasswordRouteImport
       parentRoute: typeof NotauthRoute
     }
+    '/_auth/invite/$inviteId': {
+      id: '/_auth/invite/$inviteId'
+      path: '/invite/$inviteId'
+      fullPath: '/invite/$inviteId'
+      preLoaderRoute: typeof AuthInviteInviteIdRouteImport
+      parentRoute: typeof AuthRoute
+    }
   }
 }
 
 interface AuthRouteChildren {
+  AuthSettingsRoute: typeof AuthSettingsRoute
   AuthIndexRoute: typeof AuthIndexRoute
+  AuthInviteInviteIdRoute: typeof AuthInviteInviteIdRoute
 }
 
 const AuthRouteChildren: AuthRouteChildren = {
+  AuthSettingsRoute: AuthSettingsRoute,
   AuthIndexRoute: AuthIndexRoute,
+  AuthInviteInviteIdRoute: AuthInviteInviteIdRoute,
 }
 
 const AuthRouteWithChildren = AuthRoute._addFileChildren(AuthRouteChildren)

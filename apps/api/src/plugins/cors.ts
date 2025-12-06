@@ -3,7 +3,7 @@ import { FastifyInstance } from "fastify";
 
 export const registerCors = async (server: FastifyInstance) => {
 	await server.register(cors, {
-		origin: true, // Allow all origins in development
+		origin: process.env.APP_URL || "http://localhost:33460",
 		credentials: true,
 	});
 };

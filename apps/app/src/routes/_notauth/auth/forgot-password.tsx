@@ -1,4 +1,4 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -49,10 +49,12 @@ type VerificationFormValues = z.infer<typeof verificationSchema>;
 type ResetPasswordFormValues = z.infer<typeof resetPasswordSchema>;
 
 function RouteComponent() {
+	const navigate = useNavigate();
 	const [currentStep, setCurrentStep] = useState(1);
 	const [userEmail, setUserEmail] = useState("");
 	const [otp, setOtp] = useState("");
 	const [isLoading, setIsLoading] = useState(false);
+	const [isResending, setIsResending] = useState(false);
 
 	const emailForm = useForm<EmailFormValues>({
 		resolver: zodResolver(emailSchema),
@@ -85,7 +87,6 @@ function RouteComponent() {
 			}
 
 			toast.success("Reset email sent");
-			console.log("Email submitted:", data.email);
 			setUserEmail(data.email);
 			setCurrentStep(2);
 		} catch (error) {
@@ -145,6 +146,25 @@ function RouteComponent() {
 			toast.error("Password reset failed");
 		} finally {
 			setIsLoading(false);
+		}
+	};
+
+	const handleResendOTP = async () => {
+		if (!userEmail || isResending) return;
+		setIsResending(true);
+		try {
+			const res = await authClient.forgetPassword.emailOtp({
+				email: userEmail,
+			});
+			if (res.error) {
+				toast.error(res.error.message || "Failed to resend code");
+				return;
+			}
+			toast.success("Reset code resent");
+		} catch {
+			toast.error("Failed to resend code");
+		} finally {
+			setIsResending(false);
 		}
 	};
 
@@ -222,11 +242,12 @@ function RouteComponent() {
 								<>
 									Didn't receive a code?{" "}
 									<button
-										onClick={() => console.log("Resend code")}
-										disabled={isLoading}
+										type="button"
+										onClick={handleResendOTP}
+										disabled={isLoading || isResending}
 										className="text-primary hover:underline font-medium disabled:opacity-50"
 									>
-										Resend
+										{isResending ? "Sending..." : "Resend"}
 									</button>
 								</>
 							}
@@ -320,7 +341,7 @@ function RouteComponent() {
 						message="Your password has been updated. You can now log in with your new password."
 						primaryAction={{
 							label: "Go to login",
-							onClick: () => (window.location.href = "/auth/login"),
+							onClick: () => navigate({ to: "/auth/login" }),
 						}}
 						secondaryAction={{
 							label: "Reset another account",

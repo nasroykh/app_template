@@ -1,3 +1,50 @@
+export const INVITATION_EMAIL_HTML = (
+	inviterName: string,
+	organizationName: string,
+	inviteLink: string
+) => `
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Organization Invitation</title>
+</head>
+<body style="margin: 0; padding: 0; background-color: #f4f4f4; font-family: Arial, Helvetica, sans-serif;">
+    <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="background-color: #f4f4f4;">
+        <tr>
+            <td align="center" style="padding: 40px 20px;">
+                <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%" style="max-width: 600px; background-color: #ffffff; border: 1px solid #e0e0e0;">
+                    <tr>
+                        <td style="padding: 40px 30px;">
+                            <h1 style="margin: 0 0 20px 0; font-size: 22px; font-weight: bold; color: #333333;">
+                                You've been invited!
+                            </h1>
+                            <p style="margin: 0 0 24px 0; font-size: 16px; line-height: 24px; color: #555555;">
+                                <strong>${inviterName}</strong> has invited you to join <strong>${organizationName}</strong>.
+                            </p>
+                            <table role="presentation" cellspacing="0" cellpadding="0" border="0">
+                                <tr>
+                                    <td style="background-color: #007BFF; border-radius: 6px;">
+                                        <a href="${inviteLink}" style="display: inline-block; padding: 14px 28px; color: #ffffff; text-decoration: none; font-weight: bold; font-size: 16px;">
+                                            Accept Invitation
+                                        </a>
+                                    </td>
+                                </tr>
+                            </table>
+                            <p style="margin: 24px 0 0 0; font-size: 14px; line-height: 22px; color: #777777;">
+                                This invitation will expire in 7 days.
+                            </p>
+                        </td>
+                    </tr>
+                </table>
+            </td>
+        </tr>
+    </table>
+</body>
+</html>
+`;
+
 export const OTP_EMAIL_HTML = (otp: string) => `
 <!DOCTYPE html>
 <html lang="en" xmlns="http://www.w3.org/1999/xhtml" xmlns:v="urn:schemas-microsoft-com:vml" xmlns:o="urn:schemas-microsoft-com:office:office">

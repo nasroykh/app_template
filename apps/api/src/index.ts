@@ -1,12 +1,15 @@
 import { config as dotenvConfig } from "dotenv";
 import Fastify from "fastify";
 import { initDB, disconnectDB } from "@repo/db";
-import { registerCors } from "./plugins/cors";
-import { registerSwagger } from "./plugins/swagger";
-import { registerTRPC } from "./plugins/trpc";
-import { registerWS } from "./plugins/ws";
-import { registerRedis } from "./plugins/redis";
-import { registerAuth } from "./plugins/auth";
+import {
+	registerCors,
+	registerSwagger,
+	registerTRPC,
+	registerWS,
+	registerRedis,
+	registerAuth,
+	registerRateLimit,
+} from "./plugins";
 
 dotenvConfig({ override: true, quiet: true });
 
@@ -28,8 +31,9 @@ const start = async () => {
 		await initDB();
 
 		// Register plugins
-		await registerTRPC(server);
 		await registerCors(server);
+		await registerRateLimit(server);
+		await registerTRPC(server);
 		await registerSwagger(server);
 		await registerWS(server);
 		await registerRedis(server);

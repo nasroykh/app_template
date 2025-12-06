@@ -24,6 +24,8 @@ import { Loader2 } from "lucide-react";
 import { authClient } from "@/lib/auth";
 import { ensureActiveOrganization } from "@/lib/organization";
 import { toast } from "sonner";
+import { useSetAtom } from "jotai";
+import { tokenAtom, userAtom } from "@/atoms/auth";
 
 export const Route = createFileRoute("/_notauth/auth/login")({
 	component: RouteComponent,
@@ -37,6 +39,8 @@ const loginSchema = z.object({
 type LoginFormValues = z.infer<typeof loginSchema>;
 
 function RouteComponent() {
+	const $setUser = useSetAtom(userAtom);
+	const $setToken = useSetAtom(tokenAtom);
 	const [isLoading, setIsLoading] = useState(false);
 	const navigate = useNavigate();
 
@@ -65,6 +69,9 @@ function RouteComponent() {
 
 			// Ensure user has an active organization
 			await ensureActiveOrganization(res.data.user.name);
+
+			$setUser(res.data.user);
+			$setToken(res.data.token);
 
 			toast.success("Login successful");
 			navigate({ to: "/" });

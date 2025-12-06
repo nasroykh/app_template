@@ -3,12 +3,11 @@ import { authClient } from "@/lib/auth";
 
 export const Route = createFileRoute("/_notauth")({
 	beforeLoad: async () => {
-		const session = await authClient.getSession();
+		const res = await authClient.getSession();
+		if (!res.data || res.error) return;
 
-		if (session.data && session.data.user) {
-			throw redirect({
-				to: "/",
-			});
-		}
+		throw redirect({
+			to: "/",
+		});
 	},
 });

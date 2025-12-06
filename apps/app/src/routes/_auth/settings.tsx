@@ -68,6 +68,9 @@ import {
 } from "lucide-react";
 import { authClient } from "@/lib/auth";
 import { toast } from "sonner";
+import { Layout } from "@/components/layout/layout";
+import { roleAtom, userAtom } from "@/atoms/auth";
+import { useAtomValue } from "jotai";
 
 export const Route = createFileRoute("/_auth/settings")({
 	component: SettingsPage,
@@ -116,49 +119,51 @@ function getRoleBadgeVariant(role: string) {
 
 function SettingsPage() {
 	return (
-		<div className="space-y-6">
-			<div>
-				<h1 className="text-2xl font-bold tracking-tight">Settings</h1>
-				<p className="text-muted-foreground">
-					Manage your account and organization settings
-				</p>
+		<Layout>
+			<div className="space-y-6">
+				<div>
+					<h1 className="text-2xl font-bold tracking-tight">Settings</h1>
+					<p className="text-muted-foreground">
+						Manage your account and organization settings
+					</p>
+				</div>
+
+				<Tabs defaultValue="profile" className="space-y-6">
+					<TabsList>
+						<TabsTrigger value="profile" className="gap-2">
+							<User className="size-4" />
+							Profile
+						</TabsTrigger>
+						<TabsTrigger value="organization" className="gap-2">
+							<Building2 className="size-4" />
+							Organization
+						</TabsTrigger>
+						<TabsTrigger value="members" className="gap-2">
+							<Users className="size-4" />
+							Members
+						</TabsTrigger>
+					</TabsList>
+
+					<TabsContent value="profile">
+						<ProfileTab />
+					</TabsContent>
+
+					<TabsContent value="organization">
+						<OrganizationTab />
+					</TabsContent>
+
+					<TabsContent value="members">
+						<MembersTab />
+					</TabsContent>
+				</Tabs>
 			</div>
-
-			<Tabs defaultValue="profile" className="space-y-6">
-				<TabsList>
-					<TabsTrigger value="profile" className="gap-2">
-						<User className="size-4" />
-						Profile
-					</TabsTrigger>
-					<TabsTrigger value="organization" className="gap-2">
-						<Building2 className="size-4" />
-						Organization
-					</TabsTrigger>
-					<TabsTrigger value="members" className="gap-2">
-						<Users className="size-4" />
-						Members
-					</TabsTrigger>
-				</TabsList>
-
-				<TabsContent value="profile">
-					<ProfileTab />
-				</TabsContent>
-
-				<TabsContent value="organization">
-					<OrganizationTab />
-				</TabsContent>
-
-				<TabsContent value="members">
-					<MembersTab />
-				</TabsContent>
-			</Tabs>
-		</div>
+		</Layout>
 	);
 }
 
 // Profile Tab Component
 function ProfileTab() {
-	const [isLoading, setIsLoading] = useState(true);
+	const $user = useAtomValue(userAtom);
 	const [isSaving, setIsSaving] = useState(false);
 	const [userImage, setUserImage] = useState<string | null>(null);
 
@@ -171,26 +176,14 @@ function ProfileTab() {
 	});
 
 	useEffect(() => {
-		const loadUser = async () => {
-			try {
-				const { data } = await authClient.getSession();
-				if (data?.user) {
-					form.reset({
-						name: data.user.name,
-						email: data.user.email,
-					});
-					setUserImage(data.user.image || null);
-				}
-			} catch (error) {
-				console.error("Failed to load user:", error);
-				toast.error("Failed to load profile");
-			} finally {
-				setIsLoading(false);
-			}
-		};
+		if (!$user) return;
 
-		loadUser();
-	}, [form]);
+		form.reset({
+			name: $user.name,
+			email: $user.email,
+		});
+		setUserImage($user.image || null);
+	}, [$user]);
 
 	const onSubmit = async (values: ProfileFormValues) => {
 		setIsSaving(true);
@@ -213,7 +206,7 @@ function ProfileTab() {
 		}
 	};
 
-	if (isLoading) {
+	if (!$user) {
 		return (
 			<Card>
 				<CardHeader>
@@ -327,9 +320,12 @@ function ProfileTab() {
 
 // Organization Tab Component
 function OrganizationTab() {
+	const $role = useAtomValue(roleAtom);
 	const [isLoading, setIsLoading] = useState(true);
 	const [isSaving, setIsSaving] = useState(false);
 	const [orgId, setOrgId] = useState<string | null>(null);
+
+	console.log($role);
 
 	const form = useForm<OrgFormValues>({
 		resolver: zodResolver(orgSchema),
@@ -439,7 +435,7 @@ function OrganizationTab() {
 										<Input
 											placeholder="My Organization"
 											{...field}
-											disabled={isSaving}
+											disabled={isSaving || $role !== "owner"}
 										/>
 									</FormControl>
 									<FormMessage />
@@ -456,23 +452,25 @@ function OrganizationTab() {
 										<Input
 											placeholder="my-organization"
 											{...field}
-											disabled={isSaving}
+											disabled={isSaving || $role !== "owner"}
 										/>
 									</FormControl>
 									<FormMessage />
 								</FormItem>
 							)}
 						/>
-						<Button type="submit" disabled={isSaving}>
-							{isSaving ? (
-								<>
-									<Loader2 className="mr-2 size-4 animate-spin" />
-									Saving...
-								</>
-							) : (
-								"Save Changes"
-							)}
-						</Button>
+						{$role === "owner" && (
+							<Button type="submit" disabled={isSaving || $role !== "owner"}>
+								{isSaving ? (
+									<>
+										<Loader2 className="mr-2 size-4 animate-spin" />
+										Saving...
+									</>
+								) : (
+									"Save Changes"
+								)}
+							</Button>
+						)}
 					</form>
 				</Form>
 			</CardContent>
@@ -482,10 +480,10 @@ function OrganizationTab() {
 
 // Members Tab Component
 function MembersTab() {
+	const $role = useAtomValue(roleAtom);
 	const [members, setMembers] = useState<Member[]>([]);
 	const [isLoading, setIsLoading] = useState(true);
 	const [orgId, setOrgId] = useState<string | null>(null);
-	const [currentRole, setCurrentRole] = useState<string | null>(null);
 
 	// Invite dialog state
 	const [inviteOpen, setInviteOpen] = useState(false);
@@ -499,7 +497,7 @@ function MembersTab() {
 	// Delete state
 	const [deletingMemberId, setDeletingMemberId] = useState<string | null>(null);
 
-	const canManageMembers = currentRole === "owner" || currentRole === "admin";
+	const canManageMembers = $role === "owner" || $role === "admin";
 
 	useEffect(() => {
 		loadData();
@@ -511,11 +509,6 @@ function MembersTab() {
 			const orgRes = await authClient.organization.getFullOrganization();
 			if (orgRes.data) {
 				setOrgId(orgRes.data.id);
-			}
-
-			const roleRes = await authClient.organization.getActiveMemberRole();
-			if (roleRes.data) {
-				setCurrentRole(roleRes.data.role);
 			}
 
 			const membersRes = await authClient.organization.listMembers();
@@ -667,7 +660,7 @@ function MembersTab() {
 				{canManageMembers && (
 					<Dialog open={inviteOpen} onOpenChange={setInviteOpen}>
 						<DialogTrigger asChild>
-							<Button size="sm">
+							<Button size="sm" disabled={canManageMembers}>
 								<UserPlus className="mr-2 size-4" />
 								Invite
 							</Button>

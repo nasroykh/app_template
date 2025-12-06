@@ -35,33 +35,19 @@ import {
 	DropdownMenuPortal,
 } from "@/components/ui/dropdown-menu";
 import { themeAtom, type Theme } from "@/atoms/global";
-import { useAtom } from "jotai";
+import { useAtom, useAtomValue } from "jotai";
 import { authClient } from "@/lib/auth";
 import { toast } from "sonner";
 import { useNavigate } from "@tanstack/react-router";
-import { useState, useEffect } from "react";
+import { userAtom } from "@/atoms/auth";
 
 const navItems = [{ title: "Dashboard", icon: Home, href: "/" }];
 
 export function AppSidebar() {
 	const location = useLocation();
 	const navigate = useNavigate();
+	const $user = useAtomValue(userAtom);
 	const [theme, setTheme] = useAtom(themeAtom);
-	const [user, setUser] = useState<{
-		name: string;
-		email: string;
-		image?: string | null;
-	} | null>(null);
-
-	useEffect(() => {
-		const loadUser = async () => {
-			const { data } = await authClient.getSession();
-			if (data?.user) {
-				setUser(data.user);
-			}
-		};
-		loadUser();
-	}, []);
 
 	const themeOptions: { value: Theme; label: string; icon: typeof Sun }[] = [
 		{ value: "light", label: "Light", icon: Sun },
@@ -150,11 +136,11 @@ export function AppSidebar() {
 								<SidebarMenuButton size="lg">
 									<Avatar className="size-8">
 										<AvatarImage
-											src={user?.image || undefined}
+											src={$user?.image || undefined}
 											alt="User avatar"
 										/>
 										<AvatarFallback className="bg-primary/10 text-primary text-xs">
-											{user?.name
+											{$user?.name
 												?.split(" ")
 												.map((n) => n[0])
 												.join("")
@@ -163,9 +149,9 @@ export function AppSidebar() {
 										</AvatarFallback>
 									</Avatar>
 									<div className="flex flex-col gap-0.5 leading-none text-left">
-										<span className="font-medium">{user?.name || "User"}</span>
+										<span className="font-medium">{$user?.name || "User"}</span>
 										<span className="text-xs text-muted-foreground">
-											{user?.email || ""}
+											{$user?.email || ""}
 										</span>
 									</div>
 								</SidebarMenuButton>

@@ -2,29 +2,37 @@
 
 ## Project Overview
 
-This is a full-stack web application built with a monorepo architecture using pnpm workspaces. The project consists of a React frontend, a Node.js backend, and a shared database package.
+This is a full-stack web application built with a monorepo architecture using pnpm workspaces. It serves as a comprehensive starter kit featuring authentication, payments, background jobs, and a modern UI.
 
 **Technologies:**
 
-*   **Frontend:**
-    *   React
-    *   Vite
-    *   TypeScript
-    *   TanStack Router (for routing)
-    *   TanStack React Query (for data fetching)
-    *   tRPC Client
-    *   Radix UI
-    *   Tailwind CSS
-*   **Backend:**
-    *   Node.js
-    *   Fastify
-    *   TypeScript
-    *   tRPC
+*   **Frontend (`apps/app`):**
+    *   **Framework:** React, Vite, TypeScript
+    *   **Routing:** TanStack Router
+    *   **State Management:** TanStack React Query (Server), Jotai (Client)
+    *   **API Client:** tRPC Client
+    *   **Auth:** Better Auth
+    *   **Forms:** React Hook Form, Zod
+    *   **UI/Styling:** Tailwind CSS, Radix UI, Lucide React
+    *   **Components:** Sonner (Toast), Vaul (Drawer), CMDK, Recharts, Embla Carousel
+    *   **Theme:** Next Themes
+
+*   **Backend (`apps/api`):**
+    *   **Runtime:** Node.js
+    *   **Framework:** Fastify
+    *   **Language:** TypeScript
+    *   **API:** tRPC, Fastify Swagger (OpenAPI)
+    *   **Database:** PostgreSQL, Drizzle ORM
+    *   **Auth:** Better Auth, Argon2, JWT
+    *   **Payments:** Stripe
+    *   **Queue/Jobs:** BullMQ, Redis
+    *   **Email:** Nodemailer
+    *   **Realtime:** WebSockets (@fastify/websocket)
+
+*   **Database (`packages/db`):**
     *   PostgreSQL
     *   Drizzle ORM
-*   **Database:**
-    *   PostgreSQL
-    *   Drizzle ORM
+    *   Drizzle Kit (Migrations)
     *   drizzle-zod
 
 ## Building and Running
@@ -33,7 +41,7 @@ This is a full-stack web application built with a monorepo architecture using pn
 
 *   Node.js (>=18)
 *   pnpm (>=10.0.0)
-*   Docker (for running a local PostgreSQL database)
+*   Docker (for running local PostgreSQL & Redis)
 
 ### Development
 
@@ -43,18 +51,24 @@ This is a full-stack web application built with a monorepo architecture using pn
     ```
 
 2.  **Set up environment variables:**
-    *   Create a `.env` file in the `apps/api` directory by copying the `.env.example` file.
-    *   Update the `.env` file with your database connection details.
+    *   Create a `.env` file in `apps/api` by copying `.env.example`.
+    *   Configure the following sections:
+        *   **Database:** Connection details for PostgreSQL.
+        *   **Redis:** URL for BullMQ and caching.
+        *   **Auth:** Better Auth secret and admin credentials.
+        *   **Stripe:** API keys for payments.
+        *   **SMTP:** Email server details.
+        *   **App:** URLs and ports.
 
 3.  **Start the development servers:**
     ```bash
     pnpm dev
     ```
-    This will start the frontend, backend, and database services concurrently.
+    This starts the frontend, backend, and database services.
 
-    *   Frontend: `http://localhost:5173`
-    *   Backend: `http://localhost:3001`
-    *   Swagger UI: `http://localhost:3001/docs`
+    *   Frontend: `http://localhost:33460` (Default)
+    *   Backend: `http://localhost:33450` (Default)
+    *   Swagger UI: `http://localhost:33450/docs`
 
 ### Database Migrations
 
@@ -73,6 +87,11 @@ This is a full-stack web application built with a monorepo architecture using pn
     pnpm --filter=db db:push
     ```
 
+*   **Open Drizzle Studio:**
+    ```bash
+    pnpm --filter=db db:studio
+    ```
+
 ### Building for Production
 
 ```bash
@@ -87,9 +106,12 @@ pnpm start
 
 ## Development Conventions
 
-*   **Monorepo:** The project is organized as a monorepo with `apps` and `packages` directories.
-*   **tRPC:** tRPC is used for communication between the frontend and backend, providing type-safe APIs.
-*   **Database:** Drizzle ORM is used for database access. The database schema is defined in the `packages/db` package.
-*   **Styling:** Tailwind CSS is used for styling the frontend.
-*   **Routing:** TanStack Router is used for routing in the frontend.
-*   **State Management:** TanStack React Query is used for server-side state management.
+*   **Monorepo:** Organized with `apps` (api, app) and `packages` (db) using pnpm workspaces.
+*   **tRPC:** Primary communication layer between frontend and backend, ensuring end-to-end type safety.
+*   **Authentication:** Managed via **Better Auth**, integrating with Stripe for subscriptions.
+*   **State Management:**
+    *   Server state: **TanStack React Query**.
+    *   Global client state: **Jotai**.
+*   **Styling:** **Tailwind CSS** with **Radix UI** primitives for accessible components.
+*   **Database:** **Drizzle ORM** for type-safe database interactions. Schema defined in `packages/db`.
+*   **Background Jobs:** Handled by **BullMQ** backed by **Redis**.

@@ -4,11 +4,11 @@ import { initDB, disconnectDB } from "@repo/db";
 import {
 	registerCors,
 	registerSwagger,
-	registerTRPC,
 	registerWS,
 	registerRedis,
 	registerAuth,
 	registerRateLimit,
+	registerORPC,
 } from "./plugins";
 
 dotenvConfig({ override: true, quiet: true });
@@ -23,6 +23,10 @@ export const server = Fastify({
 	},
 });
 
+server.addContentTypeParser("*", (req, payload, done) => {
+	done(null, payload);
+});
+
 const start = async () => {
 	try {
 		console.log("🚀 Starting server initialization...");
@@ -33,7 +37,8 @@ const start = async () => {
 		// Register plugins
 		await registerCors(server);
 		await registerRateLimit(server);
-		await registerTRPC(server);
+		// await registerTRPC(server);
+		await registerORPC(server);
 		await registerSwagger(server);
 		await registerWS(server);
 		await registerRedis(server);

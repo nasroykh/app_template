@@ -1,5 +1,5 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
-import { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
@@ -26,6 +26,7 @@ import { ensureActiveOrganization } from "@/lib/organization";
 import { toast } from "sonner";
 import { useSetAtom } from "jotai";
 import { tokenAtom, userAtom } from "@/atoms/auth";
+import { orpc } from "@/lib/orpc";
 
 export const Route = createFileRoute("/_notauth/auth/login")({
 	component: RouteComponent,
@@ -51,6 +52,12 @@ function RouteComponent() {
 			password: "",
 		},
 	});
+
+	useEffect(() => {
+		orpc.planet.list({}).then((res) => {
+			console.log(res);
+		});
+	}, []);
 
 	const onSubmit = async (data: LoginFormValues) => {
 		setIsLoading(true);

@@ -5,3 +5,4 @@ export { registerWS } from "./ws";
 export { registerRedis } from "./redis";
 export { registerAuth } from "./auth";
 export { registerRateLimit } from "./rate-limit";
+export { registerORPC } from "./orpc";

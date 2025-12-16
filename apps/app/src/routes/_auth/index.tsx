@@ -14,6 +14,8 @@ import {
 import { DollarSign, Users, Activity, TrendingUp } from "lucide-react";
 import { Area, AreaChart, Bar, BarChart, XAxis, YAxis } from "recharts";
 import { Layout } from "@/components/layout/layout";
+import { useEffect } from "react";
+import { orpc } from "@/lib/orpc";
 
 export const Route = createFileRoute("/_auth/")({
 	component: Dashboard,
@@ -76,6 +78,12 @@ const chartConfig = {
 };
 
 function Dashboard() {
+
+		useEffect(() => {
+			orpc.planet.list({}).then((res) => {
+				console.log(res);
+			});
+		}, []);
 	return (
 		<Layout>
 			<div className="space-y-6">

@@ -10,14 +10,14 @@ This is a full-stack web application built with a monorepo architecture using pn
   - TypeScript
   - TanStack Router (for routing)
   - TanStack React Query (for data fetching)
-  - tRPC Client
+  - ORPC Client
   - Radix UI
   - Tailwind CSS
 - **Backend:**
   - Node.js
   - Fastify
   - TypeScript
-  - tRPC
+  - ORPC
   - PostgreSQL
   - Drizzle ORM
 - **Database:**
@@ -92,7 +92,7 @@ pnpm start
 ## Development Conventions
 
 - **Monorepo:** The project is organized as a monorepo with `apps` and `packages` directories.
-- **tRPC:** tRPC is used for communication between the frontend and backend, providing type-safe APIs.
+- **ORPC:** ORPC is used for communication between the frontend and backend, providing type-safe APIs.
 - **Database:** Drizzle ORM is used for database access. The database schema is defined in the `packages/db` package.
 - **Styling:** Tailwind CSS is used for styling the frontend.
 - **Routing:** TanStack Router is used for routing in the frontend.

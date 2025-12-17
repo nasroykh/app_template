@@ -1,11 +1,11 @@
 import type { Hono } from "hono";
-import { RPCHandler } from "@orpc/server/fetch";
 import { onError } from "@orpc/server";
 
 import { router } from "../router/index.js";
+import { OpenAPIHandler } from "@orpc/openapi/fetch";
 
-export const registerORPC = (app: Hono) => {
-	const handler = new RPCHandler(router, {
+export const registerORPCOpenAPI = (app: Hono) => {
+	const handler = new OpenAPIHandler(router, {
 		interceptors: [
 			onError((error) => {
 				console.error(error);
@@ -13,9 +13,9 @@ export const registerORPC = (app: Hono) => {
 		],
 	});
 
-	app.use("/api/rpc/*", async (c, next) => {
+	app.use("/api/*", async (c, next) => {
 		const { matched, response } = await handler.handle(c.req.raw, {
-			prefix: "/api/rpc",
+			prefix: "/api",
 			context: {
 				headers: new Headers(c.req.header()),
 			},

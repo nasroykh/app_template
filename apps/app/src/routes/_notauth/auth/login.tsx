@@ -1,5 +1,5 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
-import React, { useEffect, useState } from "react";
+import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
@@ -27,6 +27,7 @@ import { toast } from "sonner";
 import { useSetAtom } from "jotai";
 import { tokenAtom, userAtom } from "@/atoms/auth";
 import { orpc } from "@/lib/orpc";
+import { useQuery } from "@tanstack/react-query";
 
 export const Route = createFileRoute("/_notauth/auth/login")({
 	component: RouteComponent,
@@ -45,6 +46,10 @@ function RouteComponent() {
 	const [isLoading, setIsLoading] = useState(false);
 	const navigate = useNavigate();
 
+	const query = useQuery(orpc.user.list.queryOptions({ input: {} }));
+
+	console.log(query.data);
+
 	const form = useForm<LoginFormValues>({
 		resolver: zodResolver(loginSchema),
 		defaultValues: {
@@ -52,12 +57,6 @@ function RouteComponent() {
 			password: "",
 		},
 	});
-
-	useEffect(() => {
-		orpc.planet.list({}).then((res) => {
-			console.log(res);
-		});
-	}, []);
 
 	const onSubmit = async (data: LoginFormValues) => {
 		setIsLoading(true);

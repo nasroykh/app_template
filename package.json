@@ -2,7 +2,6 @@
 	"name": "app_template",
 	"private": true,
 	"version": "0.0.0",
-	"packageManager": "pnpm@10.0.0",
 	"scripts": {
 		"build": "pnpm --filter=db build && pnpm --filter=api build && pnpm --filter=app build",
 		"dev": "pnpm --filter=db build && pnpm --filter=api build && concurrently -n db,api,app -c blue,green,yellow \"pnpm --filter=db dev\" \"pnpm --filter=api dev\" \"pnpm --filter=app dev\"",

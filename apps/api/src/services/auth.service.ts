@@ -1,8 +1,8 @@
-import { transporter } from "../config/nodemailer";
+import { transporter } from "../config/nodemailer.js";
 import {
 	OTP_EMAIL_HTML,
 	INVITATION_EMAIL_HTML,
-} from "../utils/email_templates";
+} from "../utils/email_templates.js";
 
 export const sendOTPEmail = async (to: string, otp: string) => {
 	const mailOptions = {

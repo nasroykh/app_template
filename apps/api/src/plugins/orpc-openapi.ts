@@ -1,7 +1,7 @@
 import type { Hono } from "hono";
 import { onError } from "@orpc/server";
 
-import { router } from "../router/index.js";
+import { router } from "../router/index";
 import { OpenAPIHandler } from "@orpc/openapi/fetch";
 
 export const registerORPCOpenAPI = (app: Hono) => {
@@ -25,6 +25,6 @@ export const registerORPCOpenAPI = (app: Hono) => {
 			return c.newResponse(response.body, response);
 		}
 
-		await next();
+		return await next();
 	});
 };

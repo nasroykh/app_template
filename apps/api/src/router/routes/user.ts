@@ -4,7 +4,7 @@ import { db, user } from "@repo/db";
 import { userSelectSchema as userSelectSchemaRaw } from "@repo/db/types";
 import { eq } from "@repo/db/drizzle-orm";
 
-import { authProcedure } from "../middleware.js";
+import { authProcedure } from "../middleware";
 
 const userSelectSchema = userSelectSchemaRaw as z.ZodSchema<
 	z.infer<typeof userSelectSchemaRaw>

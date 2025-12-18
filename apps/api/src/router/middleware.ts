@@ -1,5 +1,5 @@
 import { os, ORPCError } from "@orpc/server";
-import { auth } from "../config/auth.js";
+import { auth } from "../config/auth";
 
 const base = os.$context<{ headers: Headers }>();
 

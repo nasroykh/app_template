@@ -1,7 +1,7 @@
 import { OpenAPIGenerator } from "@orpc/openapi";
 import { ZodToJsonSchemaConverter } from "@orpc/zod/zod4";
 
-import { userRoutes } from "./routes/user.js";
+import { userRoutes } from "./routes/user";
 
 export const router = {
 	user: userRoutes,

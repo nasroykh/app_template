@@ -1,6 +1,6 @@
 {
 	"name": "api",
-	"type": "module",
+	"main": "./dist/index.js",
 	"exports": {
 		"./orpc": "./dist/router/index.js"
 	},

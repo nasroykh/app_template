@@ -2,7 +2,7 @@ import type { Hono } from "hono";
 import { RPCHandler } from "@orpc/server/fetch";
 import { onError } from "@orpc/server";
 
-import { router } from "../router/index.js";
+import { router } from "../router/index";
 
 export const registerORPC = (app: Hono) => {
 	const handler = new RPCHandler(router, {
@@ -25,6 +25,6 @@ export const registerORPC = (app: Hono) => {
 			return c.newResponse(response.body, response);
 		}
 
-		await next();
+		return await next();
 	});
 };

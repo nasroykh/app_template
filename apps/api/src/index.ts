@@ -1,13 +1,13 @@
 import { serve } from "@hono/node-server";
 import { Hono } from "hono";
-import { env } from "./config/env.js";
+import { initDB } from "@repo/db";
+import { env } from "./config/env";
+import { auth } from "./config/auth";
 import {
 	registerCors,
 	registerORPC,
 	registerORPCOpenAPI,
-} from "./plugins/index.js";
-import { initDB } from "@repo/db";
-import { auth } from "./config/auth.js";
+} from "./plugins/index";
 
 const app = new Hono();
 

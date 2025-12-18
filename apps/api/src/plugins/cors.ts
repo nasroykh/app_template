@@ -1,6 +1,6 @@
 import type { Hono } from "hono";
 import { cors } from "hono/cors";
-import { env } from "../config/env.js";
+import { env } from "../config/env";
 
 export const registerCors = (app: Hono) => {
 	app.use(

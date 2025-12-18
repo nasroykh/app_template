@@ -1,99 +1,68 @@
+# App Template - High-Performance Full-Stack Starter Kit
+
+A comprehensive, type-safe full-stack web application starter kit built with a monorepo architecture.
+
 ## Project Overview
 
-This is a full-stack web application built with a monorepo architecture using pnpm workspaces. The project consists of a React frontend, a Node.js backend, and a shared database package.
+This project is a monorepo using **pnpm workspaces**, featuring a React frontend, a Hono backend, and a shared PostgreSQL/Drizzle database package.
 
-**Technologies:**
+**Key Technologies:**
 
-- **Frontend:**
-  - React
-  - Vite
-  - TypeScript
-  - TanStack Router (for routing)
-  - TanStack React Query (for data fetching)
-  - ORPC Client
-  - Radix UI
-  - Tailwind CSS
-- **Backend:**
-  - Node.js
-  - Fastify
-  - TypeScript
-  - ORPC
-  - PostgreSQL
-  - Drizzle ORM
-- **Database:**
-  - PostgreSQL
-  - Drizzle ORM
-  - drizzle-zod
+- **Frontend:** React 19, Vite, TypeScript, TanStack Router, TanStack Query, ORPC Client, Tailwind CSS 4, Radix UI.
+- **Backend:** Node.js, Hono, ORPC, Better Auth, Stripe, PostgreSQL, Drizzle ORM.
+- **Database:** PostgreSQL, Drizzle ORM, Drizzle Kit.
 
-## Building and Running
+## Getting Started
 
 ### Prerequisites
 
-- Node.js (>=18)
-- pnpm (>=10.0.0)
-- Docker (for running a local PostgreSQL database)
+- **Node.js**: >= 18
+- **pnpm**: >= 10.0.0
+- **Docker**: (Optional) For running local PostgreSQL/Redis
 
-### Development
+### Installation
 
-1.  **Install dependencies:**
+1.  **Clone and Install:**
 
     ```bash
     pnpm install
     ```
 
-2.  **Set up environment variables:**
+2.  **Environment Setup:**
 
-    - Create a `.env` file in the `apps/api` directory by copying the `.env.example` file.
-    - Update the `.env` file with your database connection details.
+    - Configure `.env` files in `apps/api` and `packages/db` based on their `.env.example` templates.
 
-3.  **Start the development servers:**
-
+3.  **Run Development Mode:**
     ```bash
     pnpm dev
     ```
+    - **Frontend**: `http://localhost:33460`
+    - **Backend**: `http://localhost:33450`
+    - **Swagger UI**: `http://localhost:33450/docs`
 
-    This will start the frontend, backend, and database services concurrently.
+## Features
 
-    - Frontend: `http://localhost:5173`
-    - Backend: `http://localhost:3001`
-    - Swagger UI: `http://localhost:3001/docs`
+- **End-to-End Type Safety**: Shared types between backend and frontend via ORPC.
+- **Robust Authentication**: Powered by Better Auth with support for multiple providers and sessions.
+- **Modern Styling**: Utility-first styling with Tailwind CSS 4 and accessible components from Radix UI.
+- **Type-Safe Routing**: Routing with TanStack Router.
+- **Database Management**: Easy migrations and schema management with Drizzle ORM and Drizzle Kit.
+- **Subscription Support**: Integrated with Stripe for payment processing and subscriptions.
 
-### Database Migrations
+## Structure
 
-- **Generate migrations:**
+- `apps/api`: Hono-based backend API.
+- `apps/app`: React-based frontend application.
+- `packages/db`: Shared database schema and Drizzle client.
 
-  ```bash
-  pnpm --filter=db db:generate
-  ```
+## Scripts
 
-- **Run migrations:**
+- `pnpm dev`: Start all services in development mode.
+- `pnpm build`: Build all packages for production.
+- `pnpm db:generate`: Generate database migrations.
+- `pnpm db:migrate`: Run database migrations.
+- `pnpm db:push`: Push local schema changes to the database.
 
-  ```bash
-  pnpm --filter=db db:migrate
-  ```
+---
 
-- **Push schema changes (for development):**
-  ```bash
-  pnpm --filter=db db:push
-  ```
-
-### Building for Production
-
-```bash
-pnpm build
-```
-
-### Starting in Production
-
-```bash
-pnpm start
-```
-
-## Development Conventions
-
-- **Monorepo:** The project is organized as a monorepo with `apps` and `packages` directories.
-- **ORPC:** ORPC is used for communication between the frontend and backend, providing type-safe APIs.
-- **Database:** Drizzle ORM is used for database access. The database schema is defined in the `packages/db` package.
-- **Styling:** Tailwind CSS is used for styling the frontend.
-- **Routing:** TanStack Router is used for routing in the frontend.
-- **State Management:** TanStack React Query is used for server-side state management.
+For more detailed information, please refer to [GEMINI.md](./GEMINI.md).

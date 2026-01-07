@@ -26,8 +26,6 @@ import { ensureActiveOrganization } from "@/lib/organization";
 import { toast } from "sonner";
 import { useSetAtom } from "jotai";
 import { tokenAtom, userAtom } from "@/atoms/auth";
-import { orpc } from "@/lib/orpc";
-import { useQuery } from "@tanstack/react-query";
 
 export const Route = createFileRoute("/_notauth/auth/login")({
 	component: RouteComponent,
@@ -45,10 +43,6 @@ function RouteComponent() {
 	const $setToken = useSetAtom(tokenAtom);
 	const [isLoading, setIsLoading] = useState(false);
 	const navigate = useNavigate();
-
-	const query = useQuery(orpc.user.list.queryOptions({ input: {} }));
-
-	console.log(query.data);
 
 	const form = useForm<LoginFormValues>({
 		resolver: zodResolver(loginSchema),

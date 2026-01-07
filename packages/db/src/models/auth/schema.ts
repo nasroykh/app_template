@@ -4,8 +4,8 @@ import {
   text,
   timestamp,
   boolean,
-  integer,
   index,
+  uniqueIndex,
 } from "drizzle-orm/pg-core";
 
 export const user = pgTable("user", {
@@ -23,7 +23,6 @@ export const user = pgTable("user", {
   banned: boolean("banned").default(false),
   banReason: text("ban_reason"),
   banExpires: timestamp("ban_expires"),
-  stripeCustomerId: text("stripe_customer_id"),
 });
 
 export const session = pgTable(
@@ -87,14 +86,18 @@ export const verification = pgTable(
   (table) => [index("verification_identifier_idx").on(table.identifier)],
 );
 
-export const organization = pgTable("organization", {
-  id: text("id").primaryKey(),
-  name: text("name").notNull(),
-  slug: text("slug").notNull().unique(),
-  logo: text("logo"),
-  createdAt: timestamp("created_at").notNull(),
-  metadata: text("metadata"),
-});
+export const organization = pgTable(
+  "organization",
+  {
+    id: text("id").primaryKey(),
+    name: text("name").notNull(),
+    slug: text("slug").notNull().unique(),
+    logo: text("logo"),
+    createdAt: timestamp("created_at").notNull(),
+    metadata: text("metadata"),
+  },
+  (table) => [uniqueIndex("organization_slug_uidx").on(table.slug)],
+);
 
 export const member = pgTable(
   "member",
@@ -136,21 +139,6 @@ export const invitation = pgTable(
     index("invitation_email_idx").on(table.email),
   ],
 );
-
-export const subscription = pgTable("subscription", {
-  id: text("id").primaryKey(),
-  plan: text("plan").notNull(),
-  referenceId: text("reference_id").notNull(),
-  stripeCustomerId: text("stripe_customer_id"),
-  stripeSubscriptionId: text("stripe_subscription_id"),
-  status: text("status").default("incomplete"),
-  periodStart: timestamp("period_start"),
-  periodEnd: timestamp("period_end"),
-  trialStart: timestamp("trial_start"),
-  trialEnd: timestamp("trial_end"),
-  cancelAtPeriodEnd: boolean("cancel_at_period_end").default(false),
-  seats: integer("seats"),
-});
 
 export const userRelations = relations(user, ({ many }) => ({
   sessions: many(session),

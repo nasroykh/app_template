@@ -50,6 +50,7 @@ import {
 	DropdownMenu,
 	DropdownMenuContent,
 	DropdownMenuItem,
+	DropdownMenuPositioner,
 	DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Badge } from "@/components/ui/badge";
@@ -659,11 +660,11 @@ function MembersTab() {
 
 				{canManageMembers && (
 					<Dialog open={inviteOpen} onOpenChange={setInviteOpen}>
-						<DialogTrigger asChild>
-							<Button size="sm" disabled={canManageMembers}>
-								<UserPlus className="mr-2 size-4" />
-								Invite
-							</Button>
+						<DialogTrigger
+							render={<Button size="sm" disabled={canManageMembers} />}
+						>
+							<UserPlus className="mr-2 size-4" />
+							Invite
 						</DialogTrigger>
 						<DialogContent>
 							<DialogHeader>
@@ -780,55 +781,59 @@ function MembersTab() {
 									<TableCell>
 										{canManageMembers && member.role !== "owner" && (
 											<DropdownMenu>
-												<DropdownMenuTrigger asChild>
-													<Button
-														variant="ghost"
-														size="icon"
-														className="size-8"
-														disabled={
-															updatingMemberId === member.id ||
-															deletingMemberId === member.id
-														}
-													>
-														{updatingMemberId === member.id ||
-														deletingMemberId === member.id ? (
-															<Loader2 className="size-4 animate-spin" />
-														) : (
-															<MoreHorizontal className="size-4" />
-														)}
-													</Button>
+												<DropdownMenuTrigger
+													render={
+														<Button
+															variant="ghost"
+															size="icon"
+															className="size-8"
+															disabled={
+																updatingMemberId === member.id ||
+																deletingMemberId === member.id
+															}
+														/>
+													}
+												>
+													{updatingMemberId === member.id ||
+													deletingMemberId === member.id ? (
+														<Loader2 className="size-4 animate-spin" />
+													) : (
+														<MoreHorizontal className="size-4" />
+													)}
 												</DropdownMenuTrigger>
-												<DropdownMenuContent align="end">
-													{member.role === "member" && (
+												<DropdownMenuPositioner side="bottom" align="center">
+													<DropdownMenuContent>
+														{member.role === "member" && (
+															<DropdownMenuItem
+																onClick={() =>
+																	handleUpdateRole(member.id, "admin")
+																}
+															>
+																<ShieldCheck className="mr-2 size-4" />
+																Make Admin
+															</DropdownMenuItem>
+														)}
+														{member.role === "admin" && (
+															<DropdownMenuItem
+																onClick={() =>
+																	handleUpdateRole(member.id, "member")
+																}
+															>
+																<ShieldCheck className="mr-2 size-4" />
+																Make Member
+															</DropdownMenuItem>
+														)}
 														<DropdownMenuItem
+															className="text-destructive focus:text-destructive"
 															onClick={() =>
-																handleUpdateRole(member.id, "admin")
+																handleRemoveMember(member.id, member.user.email)
 															}
 														>
-															<ShieldCheck className="mr-2 size-4" />
-															Make Admin
+															<Trash2 className="mr-2 size-4" />
+															Remove
 														</DropdownMenuItem>
-													)}
-													{member.role === "admin" && (
-														<DropdownMenuItem
-															onClick={() =>
-																handleUpdateRole(member.id, "member")
-															}
-														>
-															<ShieldCheck className="mr-2 size-4" />
-															Make Member
-														</DropdownMenuItem>
-													)}
-													<DropdownMenuItem
-														className="text-destructive focus:text-destructive"
-														onClick={() =>
-															handleRemoveMember(member.id, member.user.email)
-														}
-													>
-														<Trash2 className="mr-2 size-4" />
-														Remove
-													</DropdownMenuItem>
-												</DropdownMenuContent>
+													</DropdownMenuContent>
+												</DropdownMenuPositioner>
 											</DropdownMenu>
 										)}
 									</TableCell>

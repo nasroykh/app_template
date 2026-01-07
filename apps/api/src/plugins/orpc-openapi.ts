@@ -8,14 +8,13 @@ export const registerORPCOpenAPI = (app: Hono) => {
 	const handler = new OpenAPIHandler(router, {
 		interceptors: [
 			onError((error) => {
-				console.error(error);
+				console.log(error);
 			}),
 		],
 	});
 
-	app.use("/api/*", async (c, next) => {
+	app.use("/*", async (c, next) => {
 		const { matched, response } = await handler.handle(c.req.raw, {
-			prefix: "/api",
 			context: {
 				headers: new Headers(c.req.header()),
 			},

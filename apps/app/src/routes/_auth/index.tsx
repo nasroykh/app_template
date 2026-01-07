@@ -14,8 +14,6 @@ import {
 import { DollarSign, Users, Activity, TrendingUp } from "lucide-react";
 import { Area, AreaChart, Bar, BarChart, XAxis, YAxis } from "recharts";
 import { Layout } from "@/components/layout/layout";
-import { useQuery } from "@tanstack/react-query";
-import { orpc } from "@/lib/orpc";
 
 export const Route = createFileRoute("/_auth/")({
 	component: Dashboard,
@@ -78,9 +76,6 @@ const chartConfig = {
 };
 
 function Dashboard() {
-	const query = useQuery(orpc.user.list.queryOptions({ input: {} }));
-
-	console.log(query.data);
 	return (
 		<Layout>
 			<div className="space-y-6">

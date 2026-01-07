@@ -13,6 +13,7 @@ const envSchema = z.object({
 	// Server Configuration
 	PORT: z.coerce.number(),
 	HOST: z.string(),
+	API_V1_PREFIX: z.string().startsWith("/"),
 
 	// APP Configuration
 	APP_URL: z.url(),
@@ -41,13 +42,10 @@ const envSchema = z.object({
 
 	// Better Auth Configuration
 	BETTER_AUTH_SECRET: z.string(),
-
-	// Stripe Configuration
-	STRIPE_SECRET_KEY: z.string(),
-	STRIPE_PUBLISHABLE_KEY: z.string(),
-	STRIPE_WEBHOOK_SECRET: z.string(),
 });
 
+// Validate the environment variables and export the result
 export const env = envSchema.parse(process.env);
 
+// Export the inferred type for use in other parts of your application
 export type Env = z.infer<typeof envSchema>;

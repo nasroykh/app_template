@@ -1,11 +1,30 @@
-"use client"
+import { cn } from "@/lib/utils";
 
-import * as AspectRatioPrimitive from "@radix-ui/react-aspect-ratio"
-
-function AspectRatio({
-  ...props
-}: React.ComponentProps<typeof AspectRatioPrimitive.Root>) {
-  return <AspectRatioPrimitive.Root data-slot="aspect-ratio" {...props} />
+interface AspectRatioProps extends React.ComponentProps<"div"> {
+  ratio: number;
 }
 
-export { AspectRatio }
+function AspectRatio({
+  ratio,
+  className,
+  children,
+  ...props
+}: AspectRatioProps) {
+  return (
+    <div
+      data-slot="aspect-ratio-wrapper"
+      className="relative w-full"
+      style={{ paddingBottom: `${(1 / ratio) * 100}%` }}
+    >
+      <div
+        data-slot="aspect-ratio"
+        className={cn("absolute inset-0", className)}
+        {...props}
+      >
+        {children}
+      </div>
+    </div>
+  );
+}
+
+export { AspectRatio };

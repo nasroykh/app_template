@@ -11,7 +11,15 @@ Shared database package providing the **Drizzle ORM** client and schema definiti
 
 ## Setup
 
-Ensure you have a `.env` file with your `DB_URL`.
+Ensure you have a `.env` file with the following:
+
+- `DB_URL`: PostgreSQL connection string.
+- `DB_USER`: Database user.
+- `DB_PASSWORD`: Database password.
+- `DB_HOST`: Database host.
+- `DB_PORT`: Database port.
+- `DB_NAME`: Database name.
+- `DB_SSL_MODE`: Database SSL mode (e.g., `disable`).
 
 ## Scripts
 

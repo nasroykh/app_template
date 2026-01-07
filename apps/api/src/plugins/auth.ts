@@ -5,8 +5,8 @@ import { env } from "../config/env";
 import { db, user } from "@repo/db";
 import { eq } from "@repo/db/drizzle-orm";
 
-export const registerAuth = async (app: Hono) => {
-	await initSuperAdmin();
+export const registerAuth = (app: Hono) => {
+	initSuperAdmin();
 
 	app.on(["POST", "GET"], `/auth/*`, (c) => {
 		return auth.handler(c.req.raw);

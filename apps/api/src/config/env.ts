@@ -3,9 +3,6 @@ import "dotenv/config";
 
 // Define the schema for your environment variables
 const envSchema = z.object({
-	// Redis Configuration
-	REDIS_URL: z.url(),
-
 	// Super Admin Configuration
 	SUPER_ADMIN_EMAIL: z.email(),
 	SUPER_ADMIN_PASSWORD: z.string().min(8),

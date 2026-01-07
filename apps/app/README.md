@@ -16,6 +16,14 @@ A modern frontend application built with **React 19**, **Vite**, and **TanStack 
 - **Charts**: [Recharts](https://recharts.org/)
 - **Forms**: [React Hook Form](https://react-hook-form.com/) & [Zod](https://zod.dev/)
 
+## Environment Variables
+
+Ensure you have a `.env` file with the following:
+
+- `VITE_API_URL`: Backend API URL (for production).
+- `VITE_API_URL_DEV`: Backend API URL (for development).
+- `VITE_IS_DEV`: Set to `true` during development.
+
 ## Getting Started
 
 ### Development

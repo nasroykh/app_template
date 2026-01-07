@@ -32,3 +32,4 @@ export async function disconnectDB() {
 }
 
 export * from "./models/schema";
+export * from "./models/types";

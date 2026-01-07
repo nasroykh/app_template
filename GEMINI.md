@@ -27,8 +27,7 @@ This is a high-performance full-stack web application starter kit built with a m
   - **Language:** TypeScript
   - **API:** ORPC (Type-safe), OpenAPI (Swagger) support
   - **Database:** Drizzle ORM
-  - **Auth:** Better Auth (with Stripe integration)
-  - **Payments:** Stripe
+  - **Auth:** Better Auth
   - **Email:** Nodemailer
 
 - **Database (`packages/db`):**

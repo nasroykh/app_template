@@ -9,7 +9,7 @@ This project is a monorepo using **pnpm workspaces**, featuring a React frontend
 **Key Technologies:**
 
 - **Frontend:** React 19, Vite, TypeScript, TanStack Router, TanStack Query, ORPC Client, Tailwind CSS 4, Radix UI.
-- **Backend:** Node.js, Hono, ORPC, Better Auth, Stripe, PostgreSQL, Drizzle ORM.
+- **Backend:** Node.js, Hono, ORPC, Better Auth, PostgreSQL, Drizzle ORM.
 - **Database:** PostgreSQL, Drizzle ORM, Drizzle Kit.
 
 ## Getting Started
@@ -47,7 +47,6 @@ This project is a monorepo using **pnpm workspaces**, featuring a React frontend
 - **Modern Styling**: Utility-first styling with Tailwind CSS 4 and accessible components from Radix UI.
 - **Type-Safe Routing**: Routing with TanStack Router.
 - **Database Management**: Easy migrations and schema management with Drizzle ORM and Drizzle Kit.
-- **Subscription Support**: Integrated with Stripe for payment processing and subscriptions.
 
 ## Structure
 

@@ -12,7 +12,7 @@ A modern frontend application built with **React 19**, **Vite**, and **TanStack 
   - **Global Client State**: [Jotai](https://jotai.org/)
 - **API Client**: [ORPC Client](https://orpc.run/)
 - **Styling**: [Tailwind CSS 4](https://tailwindcss.com/)
-- **UI Components**: [Radix UI](https://www.radix-ui.com/), [Lucide React](https://lucide.dev/), [Sonner](https://react-hot-toast.com/), [Vaul](https://vaul.emilkowal.ski/).
+- **UI Components**: [Base UI](https://www.base-ui.com/), [Lucide React](https://lucide.dev/), [Sonner](https://react-hot-toast.com/), [Vaul](https://vaul.emilkowal.ski/).
 - **Charts**: [Recharts](https://recharts.org/)
 - **Forms**: [React Hook Form](https://react-hook-form.com/) & [Zod](https://zod.dev/)
 

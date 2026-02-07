@@ -16,7 +16,7 @@ This is a high-performance full-stack web application starter kit built with a m
   - **API Client:** ORPC Client (End-to-end type safety)
   - **Auth:** Better Auth
   - **Forms:** React Hook Form, Zod
-  - **UI/Styling:** Tailwind CSS 4, Radix UI Primitives, Lucide React
+  - **UI/Styling:** Tailwind CSS 4, Base UI Primitives, Lucide React
   - **Components:** Sonner (Toast), Vaul (Drawer), CMDK, Recharts, Embla Carousel
   - **Theme:** Next Themes
 
@@ -99,5 +99,5 @@ This is a high-performance full-stack web application starter kit built with a m
   - `packages/db`: Shared Drizzle schema and database client.
 - **Type Safety**: End-to-end type safety is maintained via **ORPC**, connecting Hono routers directly to React hooks.
 - **Authentication**: Managed by **Better Auth**, which handles registration, login, and sessions.
-- **Styling**: Uses **Tailwind CSS 4** for a modern utility-first approach with Radix UI for accessibility.
+- **Styling**: Uses **Tailwind CSS 4** for a modern utility-first approach with Base UI for accessibility.
 - **Validation**: Shared **Zod** schemas between frontend and backend.

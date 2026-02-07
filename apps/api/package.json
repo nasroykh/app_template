@@ -1,8 +1,12 @@
 {
 	"name": "api",
 	"main": "./dist/index.js",
+	"types": "./src/router/index.ts",
 	"exports": {
-		"./orpc": "./dist/router/index.js"
+		"./orpc": {
+			"types": "./src/router/index.ts",
+			"default": "./dist/router/index.js"
+		}
 	},
 	"scripts": {
 		"dev": "NODE_ENV=development tsx watch src/index.ts",
@@ -23,6 +27,7 @@
 		"zod": "^4.3.5"
 	},
 	"devDependencies": {
+		"@repo/tsconfig": "workspace:*",
 		"@types/node": "^25.0.3",
 		"@types/nodemailer": "^7.0.4",
 		"rimraf": "^6.1.2",

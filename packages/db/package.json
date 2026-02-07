@@ -3,12 +3,24 @@
 	"version": "0.0.0",
 	"description": "",
 	"main": "dist/index.js",
-	"types": "dist/types.d.ts",
+	"types": "src/index.ts",
 	"exports": {
-		".": "./dist/index.js",
-		"./schema": "./dist/schema.js",
-		"./types": "./dist/types.js",
-		"./drizzle-orm": "./dist/drizzle-orm.js"
+		".": {
+			"types": "./src/index.ts",
+			"default": "./dist/index.js"
+		},
+		"./schema": {
+			"types": "./src/schema.ts",
+			"default": "./dist/schema.js"
+		},
+		"./types": {
+			"types": "./src/types.ts",
+			"default": "./dist/types.js"
+		},
+		"./drizzle-orm": {
+			"types": "./src/drizzle-orm.ts",
+			"default": "./dist/drizzle-orm.js"
+		}
 	},
 	"scripts": {
 		"dev": "NODE_ENV=development tsx watch src/index.ts",
@@ -31,6 +43,7 @@
 		"zod": "^4.3.5"
 	},
 	"devDependencies": {
+		"@repo/tsconfig": "workspace:*",
 		"@types/pg": "^8.16.0",
 		"drizzle-kit": "^0.31.8",
 		"rimraf": "^6.1.2",

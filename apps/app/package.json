@@ -43,6 +43,7 @@
 	},
 	"devDependencies": {
 		"@eslint/js": "^9.39.2",
+		"@repo/tsconfig": "workspace:*",
 		"@tanstack/router-plugin": "^1.145.11",
 		"@types/js-cookie": "^3.0.6",
 		"@types/node": "^25.0.3",

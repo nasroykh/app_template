@@ -1,3 +1,8 @@
+.agent/
+.claude/
+.cursor/
+.turbo
+
 # pnpm store
 .pnpm-store/
 

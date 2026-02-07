@@ -16,7 +16,7 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
 			} else {
 				// System preference
 				const prefersDark = window.matchMedia(
-					"(prefers-color-scheme: dark)"
+					"(prefers-color-scheme: dark)",
 				).matches;
 				if (prefersDark) {
 					root.classList.add("dark");
@@ -35,6 +35,8 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
 			mediaQuery.addEventListener("change", handler);
 			return () => mediaQuery.removeEventListener("change", handler);
 		}
+
+		return undefined;
 	}, [theme]);
 
 	return <>{children}</>;

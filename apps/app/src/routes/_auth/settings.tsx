@@ -50,7 +50,6 @@ import {
 	DropdownMenu,
 	DropdownMenuContent,
 	DropdownMenuItem,
-	DropdownMenuPositioner,
 	DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Badge } from "@/components/ui/badge";
@@ -569,7 +568,7 @@ function MembersTab() {
 			}
 
 			setMembers((prev) =>
-				prev.map((m) => (m.id === memberId ? { ...m, role: newRole } : m))
+				prev.map((m) => (m.id === memberId ? { ...m, role: newRole } : m)),
 			);
 			toast.success("Role updated successfully");
 		} catch (error) {
@@ -791,49 +790,47 @@ function MembersTab() {
 																updatingMemberId === member.id ||
 																deletingMemberId === member.id
 															}
-														/>
+														>
+															{updatingMemberId === member.id ||
+															deletingMemberId === member.id ? (
+																<Loader2 className="size-4 animate-spin" />
+															) : (
+																<MoreHorizontal className="size-4" />
+															)}
+														</Button>
 													}
-												>
-													{updatingMemberId === member.id ||
-													deletingMemberId === member.id ? (
-														<Loader2 className="size-4 animate-spin" />
-													) : (
-														<MoreHorizontal className="size-4" />
-													)}
-												</DropdownMenuTrigger>
-												<DropdownMenuPositioner side="bottom" align="center">
-													<DropdownMenuContent>
-														{member.role === "member" && (
-															<DropdownMenuItem
-																onClick={() =>
-																	handleUpdateRole(member.id, "admin")
-																}
-															>
-																<ShieldCheck className="mr-2 size-4" />
-																Make Admin
-															</DropdownMenuItem>
-														)}
-														{member.role === "admin" && (
-															<DropdownMenuItem
-																onClick={() =>
-																	handleUpdateRole(member.id, "member")
-																}
-															>
-																<ShieldCheck className="mr-2 size-4" />
-																Make Member
-															</DropdownMenuItem>
-														)}
+												/>
+												<DropdownMenuContent side="bottom" align="end">
+													{member.role === "member" && (
 														<DropdownMenuItem
-															className="text-destructive focus:text-destructive"
 															onClick={() =>
-																handleRemoveMember(member.id, member.user.email)
+																handleUpdateRole(member.id, "admin")
 															}
 														>
-															<Trash2 className="mr-2 size-4" />
-															Remove
+															<ShieldCheck className="mr-2 size-4" />
+															Make Admin
 														</DropdownMenuItem>
-													</DropdownMenuContent>
-												</DropdownMenuPositioner>
+													)}
+													{member.role === "admin" && (
+														<DropdownMenuItem
+															onClick={() =>
+																handleUpdateRole(member.id, "member")
+															}
+														>
+															<ShieldCheck className="mr-2 size-4" />
+															Make Member
+														</DropdownMenuItem>
+													)}
+													<DropdownMenuItem
+														className="text-destructive focus:text-destructive"
+														onClick={() =>
+															handleRemoveMember(member.id, member.user.email)
+														}
+													>
+														<Trash2 className="mr-2 size-4" />
+														Remove
+													</DropdownMenuItem>
+												</DropdownMenuContent>
 											</DropdownMenu>
 										)}
 									</TableCell>

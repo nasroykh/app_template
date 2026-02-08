@@ -33,7 +33,6 @@ import {
 	DropdownMenuSubTrigger,
 	DropdownMenuSubContent,
 	DropdownMenuPortal,
-	DropdownMenuPositioner,
 } from "@/components/ui/dropdown-menu";
 import { themeAtom, type Theme } from "@/atoms/global";
 import { useAtom, useAtomValue } from "jotai";
@@ -132,63 +131,71 @@ export function AppSidebar() {
 				<SidebarMenu>
 					<SidebarMenuItem>
 						<DropdownMenu>
-							<DropdownMenuTrigger render={<SidebarMenuButton size="lg" />}>
-								<Avatar className="size-8">
-									<AvatarImage
-										src={$user?.image || undefined}
-										alt="User avatar"
-									/>
-									<AvatarFallback className="bg-primary/10 text-primary text-xs">
-										{$user?.name
-											?.split(" ")
-											.map((n) => n[0])
-											.join("")
-											.toUpperCase()
-											.slice(0, 2) || "U"}
-									</AvatarFallback>
-								</Avatar>
-								<div className="flex flex-col gap-0.5 leading-none text-left">
-									<span className="font-medium">{$user?.name || "User"}</span>
-									<span className="text-xs text-muted-foreground">
-										{$user?.email || ""}
-									</span>
-								</div>
-							</DropdownMenuTrigger>
-							<DropdownMenuPositioner side="bottom" align="center">
-								<DropdownMenuContent className="w-[--radix-dropdown-menu-trigger-width]">
-									<DropdownMenuItem render={<Link to="/settings" />}>
-										<IconSettings className="mr-2 size-4" />
-										Settings
-									</DropdownMenuItem>
-									<DropdownMenuSub>
-										<DropdownMenuSubTrigger>
-											<IconSun className="mr-2 size-4" />
-											Theme
-										</DropdownMenuSubTrigger>
-										<DropdownMenuPortal>
-											<DropdownMenuSubContent>
-												{themeOptions.map((option) => (
-													<DropdownMenuItem
-														key={option.value}
-														onClick={() => setTheme(option.value)}
-													>
-														<option.icon className="mr-2 size-4" />
-														{option.label}
-														{theme === option.value && (
-															<IconCheck className="ml-auto size-4" />
-														)}
-													</DropdownMenuItem>
-												))}
-											</DropdownMenuSubContent>
-										</DropdownMenuPortal>
-									</DropdownMenuSub>
-									<DropdownMenuSeparator />
-									<DropdownMenuItem onClick={handleLogout}>
-										<IconLogout className="mr-2 size-4" />
-										Log out
-									</DropdownMenuItem>
-								</DropdownMenuContent>
-							</DropdownMenuPositioner>
+							<DropdownMenuTrigger
+								render={
+									<SidebarMenuButton size="lg">
+										<Avatar className="size-8">
+											<AvatarImage
+												src={$user?.image || undefined}
+												alt="User avatar"
+											/>
+											<AvatarFallback className="bg-primary/10 text-primary text-xs">
+												{$user?.name
+													?.split(" ")
+													.map((n) => n[0])
+													.join("")
+													.toUpperCase()
+													.slice(0, 2) || "U"}
+											</AvatarFallback>
+										</Avatar>
+										<div className="flex flex-col gap-0.5 leading-none text-left">
+											<span className="font-medium">
+												{$user?.name || "User"}
+											</span>
+											<span className="text-xs text-muted-foreground">
+												{$user?.email || ""}
+											</span>
+										</div>
+									</SidebarMenuButton>
+								}
+							/>
+							<DropdownMenuContent
+								className="w-48"
+								side="bottom"
+								align="center"
+							>
+								<DropdownMenuItem render={<Link to="/settings" />}>
+									<IconSettings className="mr-2 size-4" />
+									Settings
+								</DropdownMenuItem>
+								<DropdownMenuSub>
+									<DropdownMenuSubTrigger>
+										<IconSun className="mr-2 size-4" />
+										Theme
+									</DropdownMenuSubTrigger>
+									<DropdownMenuPortal>
+										<DropdownMenuSubContent>
+											{themeOptions.map((option) => (
+												<DropdownMenuItem
+													key={option.value}
+													onClick={() => setTheme(option.value)}
+												>
+													<option.icon className="mr-2 size-4" />
+													{option.label}
+													{theme === option.value && (
+														<IconCheck className="ml-auto size-4" />
+													)}
+												</DropdownMenuItem>
+											))}
+										</DropdownMenuSubContent>
+									</DropdownMenuPortal>
+								</DropdownMenuSub>
+								<DropdownMenuSeparator />
+								<DropdownMenuItem onClick={handleLogout}>
+									<IconLogout className="mr-2 size-4" />
+									Log out
+								</DropdownMenuItem>
+							</DropdownMenuContent>
 						</DropdownMenu>
 					</SidebarMenuItem>
 				</SidebarMenu>

@@ -1,14 +1,14 @@
 import { Link, useLocation } from "@tanstack/react-router";
 import {
-	Home,
-	Settings,
-	LogOut,
-	Sparkles,
-	Sun,
-	Moon,
-	Monitor,
-	Check,
-} from "lucide-react";
+	IconHome,
+	IconSettings,
+	IconLogout,
+	IconSparkles,
+	IconSun,
+	IconMoon,
+	IconDeviceDesktop,
+	IconCheck,
+} from "@tabler/icons-react";
 
 import {
 	Sidebar,
@@ -42,7 +42,7 @@ import { toast } from "sonner";
 import { useNavigate } from "@tanstack/react-router";
 import { userAtom } from "@/atoms/auth";
 
-const navItems = [{ title: "Dashboard", icon: Home, href: "/" }];
+const navItems = [{ title: "Dashboard", icon: IconHome, href: "/" }];
 
 export function AppSidebar() {
 	const location = useLocation();
@@ -50,11 +50,12 @@ export function AppSidebar() {
 	const $user = useAtomValue(userAtom);
 	const [theme, setTheme] = useAtom(themeAtom);
 
-	const themeOptions: { value: Theme; label: string; icon: typeof Sun }[] = [
-		{ value: "light", label: "Light", icon: Sun },
-		{ value: "dark", label: "Dark", icon: Moon },
-		{ value: "system", label: "System", icon: Monitor },
-	];
+	const themeOptions: { value: Theme; label: string; icon: typeof IconSun }[] =
+		[
+			{ value: "light", label: "Light", icon: IconSun },
+			{ value: "dark", label: "Dark", icon: IconMoon },
+			{ value: "system", label: "System", icon: IconDeviceDesktop },
+		];
 
 	const handleLogout = async () => {
 		try {
@@ -78,7 +79,7 @@ export function AppSidebar() {
 					<SidebarMenuItem>
 						<SidebarMenuButton size="lg" render={<Link to="/" />}>
 							<div className="flex aspect-square size-8 items-center justify-center rounded-lg bg-primary text-primary-foreground">
-								<Sparkles className="size-4" />
+								<IconSparkles className="size-4" />
 							</div>
 							<div className="flex flex-col gap-0.5 leading-none">
 								<span className="font-semibold">Acme Inc</span>
@@ -156,12 +157,12 @@ export function AppSidebar() {
 							<DropdownMenuPositioner side="bottom" align="center">
 								<DropdownMenuContent className="w-[--radix-dropdown-menu-trigger-width]">
 									<DropdownMenuItem render={<Link to="/settings" />}>
-										<Settings className="mr-2 size-4" />
+										<IconSettings className="mr-2 size-4" />
 										Settings
 									</DropdownMenuItem>
 									<DropdownMenuSub>
 										<DropdownMenuSubTrigger>
-											<Sun className="mr-2 size-4" />
+											<IconSun className="mr-2 size-4" />
 											Theme
 										</DropdownMenuSubTrigger>
 										<DropdownMenuPortal>
@@ -174,7 +175,7 @@ export function AppSidebar() {
 														<option.icon className="mr-2 size-4" />
 														{option.label}
 														{theme === option.value && (
-															<Check className="ml-auto size-4" />
+															<IconCheck className="ml-auto size-4" />
 														)}
 													</DropdownMenuItem>
 												))}
@@ -183,7 +184,7 @@ export function AppSidebar() {
 									</DropdownMenuSub>
 									<DropdownMenuSeparator />
 									<DropdownMenuItem onClick={handleLogout}>
-										<LogOut className="mr-2 size-4" />
+										<IconLogout className="mr-2 size-4" />
 										Log out
 									</DropdownMenuItem>
 								</DropdownMenuContent>

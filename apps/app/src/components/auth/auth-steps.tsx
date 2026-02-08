@@ -7,7 +7,7 @@ import {
 	CardTitle,
 } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Loader2, CheckCircle2 } from "lucide-react";
+import { IconLoader2, IconCircleCheck } from "@tabler/icons-react";
 
 interface StepWrapperProps {
 	title: string;
@@ -52,7 +52,7 @@ export function FormStep({
 			<Button type="submit" className="w-full mt-6" disabled={isLoading}>
 				{isLoading ? (
 					<>
-						<Loader2 className="mr-2 h-4 w-4 animate-spin" />
+						<IconLoader2 className="mr-2 h-4 w-4 animate-spin" />
 						Loading...
 					</>
 				) : (
@@ -93,7 +93,7 @@ export function SuccessStep({
 		<div className="space-y-4 text-center">
 			<div className="flex justify-center">
 				<div className="rounded-full bg-primary/10 p-3">
-					<CheckCircle2 className="w-8 h-8 text-primary" />
+					<IconCircleCheck className="w-8 h-8 text-primary" />
 				</div>
 			</div>
 			<div>

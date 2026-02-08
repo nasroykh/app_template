@@ -1,5 +1,5 @@
 import type { ReactNode } from "react";
-import { ArrowLeft } from "lucide-react";
+import { IconArrowLeft } from "@tabler/icons-react";
 
 interface AuthLayoutProps {
 	children: ReactNode;
@@ -27,7 +27,7 @@ export function AuthLayout({
 					className="absolute top-6 left-6 p-2.5 rounded-lg border border-border hover:bg-accent transition-colors flex items-center gap-2"
 					aria-label="Go back"
 				>
-					<ArrowLeft className="w-5 h-5" />
+					<IconArrowLeft className="w-5 h-5" />
 				</button>
 			)}
 

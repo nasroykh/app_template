@@ -18,8 +18,9 @@ import {
 	FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import { authClient } from "@/lib/auth";
+import { orpc } from "@/lib/orpc";
 import { toast } from "sonner";
+import { useMutation } from "@tanstack/react-query";
 
 export const Route = createFileRoute("/_notauth/auth/register")({
 	component: RouteComponent,
@@ -53,8 +54,6 @@ function RouteComponent() {
 	const [currentStep, setCurrentStep] = useState(1);
 	const [userEmail, setUserEmail] = useState("");
 	const [orgName, setOrgName] = useState("");
-	const [isLoading, setIsLoading] = useState(false);
-	const [isResending, setIsResending] = useState(false);
 
 	const registerForm = useForm<RegisterFormValues>({
 		resolver: zodResolver(registerSchema),
@@ -72,98 +71,107 @@ function RouteComponent() {
 		defaultValues: { code: "" },
 	});
 
-	const onRegisterSubmit = async (data: RegisterFormValues) => {
-		setIsLoading(true);
+	// Mutations
+	const signUpMutation = useMutation(
+		orpc.auth.signUp.mutationOptions({
+			onSuccess: (data: any) => {
+				if (!data || !data.user) {
+					toast.error("Failed to register");
+					return;
+				}
+				setCurrentStep(2);
+				setUserEmail(registerForm.getValues("email"));
+				setOrgName(registerForm.getValues("organizationName"));
+				toast.success("Verification email sent successfully");
+			},
+			onError: (error: any) => {
+				toast.error(error.message || "Failed to register");
+			},
+		}),
+	);
 
-		try {
-			const res = await authClient.signUp.email({
-				email: data.email,
-				name: data.name,
-				password: data.password,
-			});
+	const verifyEmailMutation = useMutation(
+		orpc.auth.verifyEmail.mutationOptions({
+			onSuccess: async () => {
+				// Create organization after email verification
+				const slug = orgName
+					.toLowerCase()
+					.replace(/[^a-z0-9]+/g, "-")
+					.replace(/^-|-$/g, "");
 
-			if (!res.data || res.error) {
-				toast.error((res.error && res.error.message) || "Failed to register");
-				return;
-			}
-
-			setCurrentStep(2);
-			setUserEmail(data.email);
-			setOrgName(data.organizationName);
-			toast.success("Verification email sent successfully");
-		} catch (error) {
-			toast.error("Failed to send verification email");
-			console.error("Failed to send verification email:", error);
-		} finally {
-			setIsLoading(false);
-		}
-	};
-
-	const onVerificationSubmit = async (data: VerificationFormValues) => {
-		setIsLoading(true);
-		try {
-			const res = await authClient.emailOtp.verifyEmail({
-				email: userEmail,
-				otp: data.code,
-			});
-
-			if (!res.data || res.error) {
-				toast.error(
-					(res.error && res.error.message) || "Invalid verification code"
-				);
-				return;
-			}
-
-			// Auto-create organization after email verification
-			const slug = orgName
-				.toLowerCase()
-				.replace(/[^a-z0-9]+/g, "-")
-				.replace(/^-|-$/g, "");
-
-			const orgRes = await authClient.organization.create({
-				name: orgName,
-				slug: `${slug}-${Date.now()}`,
-				userId: res.data.user.id,
-			});
-
-			if (orgRes.error) {
-				console.error("Failed to create organization:", orgRes.error);
-				// Still proceed - user can create org later
-			} else {
-				// Set as active organization
-				await authClient.organization.setActive({
-					organizationId: orgRes.data.id,
+				createOrgMutation.mutate({
+					name: orgName,
+					slug: `${slug}-${Date.now()}`,
 				});
-			}
+			},
+			onError: (error: any) => {
+				toast.error(error.message || "Invalid verification code");
+			},
+		}),
+	);
 
-			setCurrentStep(3);
-		} catch (error) {
-			toast.error("Failed to verify email");
-			console.error("Failed to verify email:", error);
-		} finally {
-			setIsLoading(false);
-		}
+	const createOrgMutation = useMutation(
+		orpc.organization.create.mutationOptions({
+			onSuccess: (data: any) => {
+				// Set as active organization
+				setActiveOrgMutation.mutate({ organizationId: data.id });
+			},
+			onError: (error: any) => {
+				console.error("Failed to create organization:", error);
+				// Still proceed - user can create org later
+				setCurrentStep(3);
+			},
+		}),
+	);
+
+	const setActiveOrgMutation = useMutation(
+		orpc.organization.setActive.mutationOptions({
+			onSuccess: () => {
+				setCurrentStep(3);
+			},
+			onError: () => {
+				// Still proceed even if setting active fails
+				setCurrentStep(3);
+			},
+		}),
+	);
+
+	const resendOtpMutation = useMutation(
+		orpc.auth.sendVerificationOtp.mutationOptions({
+			onSuccess: () => {
+				toast.success("Verification code resent");
+			},
+			onError: (error: any) => {
+				toast.error(error.message || "Failed to resend code");
+			},
+		}),
+	);
+
+	const onRegisterSubmit = (data: RegisterFormValues) => {
+		signUpMutation.mutate({
+			email: data.email,
+			name: data.name,
+			password: data.password,
+		});
 	};
 
-	const handleResendOTP = async () => {
-		if (!userEmail || isResending) return;
-		setIsResending(true);
-		try {
-			const res = await authClient.emailOtp.sendVerificationOtp({
-				email: userEmail,
-				type: "email-verification",
-			});
-			if (res.error) {
-				toast.error(res.error.message || "Failed to resend code");
-				return;
-			}
-			toast.success("Verification code resent");
-		} catch {
-			toast.error("Failed to resend code");
-		} finally {
-			setIsResending(false);
-		}
+	const onVerificationSubmit = (data: VerificationFormValues) => {
+		verifyEmailMutation.mutate({
+			email: userEmail,
+			otp: data.code,
+		});
 	};
+
+	const handleResendOTP = () => {
+		if (!userEmail || resendOtpMutation.isPending) return;
+		resendOtpMutation.mutate({ email: userEmail });
+	};
+
+	const isLoading =
+		signUpMutation.isPending ||
+		verifyEmailMutation.isPending ||
+		createOrgMutation.isPending ||
+		setActiveOrgMutation.isPending;
 
 	return (
 		<AuthLayout
@@ -180,7 +188,7 @@ function RouteComponent() {
 					<Form {...registerForm}>
 						<FormStep
 							onSubmit={registerForm.handleSubmit(onRegisterSubmit)}
-							isLoading={isLoading}
+							isLoading={signUpMutation.isPending}
 							submitText="Continue"
 							footerContent={
 								<>
@@ -205,7 +213,7 @@ function RouteComponent() {
 												placeholder="John Doe"
 												type="text"
 												{...field}
-												disabled={isLoading}
+												disabled={signUpMutation.isPending}
 											/>
 										</FormControl>
 										<FormMessage />
@@ -223,7 +231,7 @@ function RouteComponent() {
 												placeholder="name@example.com"
 												type="email"
 												{...field}
-												disabled={isLoading}
+												disabled={signUpMutation.isPending}
 											/>
 										</FormControl>
 										<FormMessage />
@@ -241,7 +249,7 @@ function RouteComponent() {
 												placeholder="My Company"
 												type="text"
 												{...field}
-												disabled={isLoading}
+												disabled={signUpMutation.isPending}
 											/>
 										</FormControl>
 										<FormMessage />
@@ -259,7 +267,7 @@ function RouteComponent() {
 												placeholder="Enter your password"
 												type="password"
 												{...field}
-												disabled={isLoading}
+												disabled={signUpMutation.isPending}
 											/>
 										</FormControl>
 										<FormMessage />
@@ -277,7 +285,7 @@ function RouteComponent() {
 												placeholder="Confirm your password"
 												type="password"
 												{...field}
-												disabled={isLoading}
+												disabled={signUpMutation.isPending}
 											/>
 										</FormControl>
 										<FormMessage />
@@ -305,10 +313,10 @@ function RouteComponent() {
 									<button
 										type="button"
 										onClick={handleResendOTP}
-										disabled={isLoading || isResending}
+										disabled={isLoading || resendOtpMutation.isPending}
 										className="text-primary hover:underline font-medium disabled:opacity-50"
 									>
-										{isResending ? "Sending..." : "Resend"}
+										{resendOtpMutation.isPending ? "Sending..." : "Resend"}
 									</button>
 								</>
 							}

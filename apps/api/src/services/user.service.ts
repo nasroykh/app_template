@@ -10,7 +10,7 @@ export type CreateUserInput = {
 	email: string;
 	password: string;
 	name: string;
-	role?: Role | Role[];
+	role: Role | Role[];
 	data?: Record<string, unknown>;
 };
 
@@ -157,7 +157,7 @@ export async function setUserRole(input: SetUserRoleInput, headers: Headers) {
  */
 export async function setUserPassword(
 	input: SetUserPasswordInput,
-	headers: Headers
+	headers: Headers,
 ) {
 	return auth.api.setUserPassword({
 		body: {
@@ -215,7 +215,7 @@ export async function listUserSessions(userId: string, headers: Headers) {
  */
 export async function revokeUserSession(
 	sessionToken: string,
-	headers: Headers
+	headers: Headers,
 ) {
 	return auth.api.revokeUserSession({
 		body: { sessionToken },

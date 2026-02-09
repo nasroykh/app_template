@@ -18,8 +18,9 @@ import {
 	FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import { authClient } from "@/lib/auth";
+import { orpc } from "@/lib/orpc";
 import { toast } from "sonner";
+import { useMutation } from "@tanstack/react-query";
 
 export const Route = createFileRoute("/_notauth/auth/forgot-password")({
 	component: RouteComponent,
@@ -53,8 +54,6 @@ function RouteComponent() {
 	const [currentStep, setCurrentStep] = useState(1);
 	const [userEmail, setUserEmail] = useState("");
 	const [otp, setOtp] = useState("");
-	const [isLoading, setIsLoading] = useState(false);
-	const [isResending, setIsResending] = useState(false);
 
 	const emailForm = useForm<EmailFormValues>({
 		resolver: zodResolver(emailSchema),
@@ -71,101 +70,75 @@ function RouteComponent() {
 		defaultValues: { password: "", confirmPassword: "" },
 	});
 
-	const onEmailSubmit = async (data: EmailFormValues) => {
-		setIsLoading(true);
+	// Mutations
+	const forgetPasswordMutation = useMutation(
+		orpc.auth.forgetPassword.mutationOptions({
+			onSuccess: () => {
+				toast.success("Reset email sent");
+				setUserEmail(emailForm.getValues("email"));
+				setCurrentStep(2);
+			},
+			onError: (error: any) => {
+				toast.error(error.message || "Failed to send reset email");
+			},
+		}),
+	);
 
-		try {
-			const res = await authClient.forgetPassword.emailOtp({
-				email: data.email,
-			});
+	const checkOtpMutation = useMutation(
+		orpc.auth.checkVerificationOtp.mutationOptions({
+			onSuccess: () => {
+				toast.success("Verification successful");
+				setOtp(verificationForm.getValues("code"));
+				setCurrentStep(3);
+			},
+			onError: (error: any) => {
+				toast.error(error.message || "Invalid verification code");
+			},
+		}),
+	);
 
-			if (!res.data || res.error) {
-				toast.error(
-					(res.error && res.error.message) || "Failed to send reset email"
-				);
-				return;
-			}
+	const resetPasswordMutation = useMutation(
+		orpc.auth.resetPassword.mutationOptions({
+			onSuccess: () => {
+				toast.success("Password reset successful");
+				setCurrentStep(4);
+			},
+			onError: (error: any) => {
+				toast.error(error.message || "Password reset failed");
+			},
+		}),
+	);
 
-			toast.success("Reset email sent");
-			setUserEmail(data.email);
-			setCurrentStep(2);
-		} catch (error) {
-			console.error("Failed to send reset email:", error);
-			toast.error("Failed to send reset email");
-		} finally {
-			setIsLoading(false);
-		}
+	const resendOtpMutation = useMutation(
+		orpc.auth.forgetPassword.mutationOptions({
+			onSuccess: () => {
+				toast.success("Reset code resent");
+			},
+			onError: (error: any) => {
+				toast.error(error.message || "Failed to resend code");
+			},
+		}),
+	);
+
+	const onEmailSubmit = (data: EmailFormValues) => {
+		forgetPasswordMutation.mutate({ email: data.email });
 	};
 
-	const onVerificationSubmit = async (data: VerificationFormValues) => {
-		setIsLoading(true);
-
-		try {
-			const res = await authClient.emailOtp.checkVerificationOtp({
-				email: userEmail,
-				otp: data.code,
-				type: "forget-password",
-			});
-
-			if (!res.data || res.error) {
-				toast.error(
-					(res.error && res.error.message) || "Invalid verification code"
-				);
-				return;
-			}
-
-			toast.success("Verification successful");
-			setOtp(data.code);
-			setCurrentStep(3);
-		} finally {
-			setIsLoading(false);
-		}
+	const onVerificationSubmit = (data: VerificationFormValues) => {
+		checkOtpMutation.mutate({ email: userEmail, otp: data.code });
 	};
 
-	const onResetPasswordSubmit = async (data: ResetPasswordFormValues) => {
-		setIsLoading(true);
-
-		try {
-			const res = await authClient.emailOtp.resetPassword({
-				password: data.password,
-				email: userEmail,
-				otp,
-			});
-
-			if (!res.data || res.error) {
-				toast.error(
-					(res.error && res.error.message) || "Failed to reset password"
-				);
-				return;
-			}
-
-			toast.success("Password reset successful");
-			setCurrentStep(4);
-		} catch (error) {
-			console.error("Password reset failed:", error);
-			toast.error("Password reset failed");
-		} finally {
-			setIsLoading(false);
-		}
+	const onResetPasswordSubmit = (data: ResetPasswordFormValues) => {
+		resetPasswordMutation.mutate({
+			email: userEmail,
+			otp,
+			newPassword: data.password,
+		});
 	};
 
-	const handleResendOTP = async () => {
-		if (!userEmail || isResending) return;
-		setIsResending(true);
-		try {
-			const res = await authClient.forgetPassword.emailOtp({
-				email: userEmail,
-			});
-			if (res.error) {
-				toast.error(res.error.message || "Failed to resend code");
-				return;
-			}
-			toast.success("Reset code resent");
-		} catch {
-			toast.error("Failed to resend code");
-		} finally {
-			setIsResending(false);
-		}
+	const handleResendOTP = () => {
+		if (!userEmail || resendOtpMutation.isPending) return;
+		resendOtpMutation.mutate({ email: userEmail });
 	};
 
 	const handleReset = () => {
@@ -175,6 +148,11 @@ function RouteComponent() {
 		resetPasswordForm.reset();
 		setUserEmail("");
 	};
+
+	const isLoading =
+		forgetPasswordMutation.isPending ||
+		checkOtpMutation.isPending ||
+		resetPasswordMutation.isPending;
 
 	return (
 		<AuthLayout
@@ -191,7 +169,7 @@ function RouteComponent() {
 					<Form {...emailForm}>
 						<FormStep
 							onSubmit={emailForm.handleSubmit(onEmailSubmit)}
-							isLoading={isLoading}
+							isLoading={forgetPasswordMutation.isPending}
 							submitText="Send reset link"
 							footerContent={
 								<>
@@ -216,7 +194,7 @@ function RouteComponent() {
 												placeholder="name@example.com"
 												type="email"
 												{...field}
-												disabled={isLoading}
+												disabled={forgetPasswordMutation.isPending}
 											/>
 										</FormControl>
 										<FormMessage />
@@ -244,10 +222,10 @@ function RouteComponent() {
 									<button
 										type="button"
 										onClick={handleResendOTP}
-										disabled={isLoading || isResending}
+										disabled={isLoading || resendOtpMutation.isPending}
 										className="text-primary hover:underline font-medium disabled:opacity-50"
 									>
-										{isResending ? "Sending..." : "Resend"}
+										{resendOtpMutation.isPending ? "Sending..." : "Resend"}
 									</button>
 								</>
 							}

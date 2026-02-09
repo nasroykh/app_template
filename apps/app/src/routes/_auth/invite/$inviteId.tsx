@@ -22,9 +22,16 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Building2, CheckCircle2, XCircle, Loader2 } from "lucide-react";
+import {
+	IconBuilding,
+	IconCircleCheck,
+	IconCircleX,
+	IconLoader2,
+} from "@tabler/icons-react";
 import { authClient } from "@/lib/auth";
+import { orpc } from "@/lib/orpc";
 import { toast } from "sonner";
+import { useMutation, useQuery } from "@tanstack/react-query";
 
 export const Route = createFileRoute("/_auth/invite/$inviteId")({
 	component: InvitePage,
@@ -40,7 +47,7 @@ const signupSchema = z
 	.refine((data) => data.password === data.confirmPassword, {
 		message: "Passwords don't match",
 		path: ["confirmPassword"],
-	})
+	});
 
 const loginSchema = z.object({
 	password: z.string().min(1, "Password is required"),
@@ -64,22 +71,31 @@ function InvitePage() {
 
 	const [invitation, setInvitation] = useState<InvitationData | null>(null);
 	const [isLoading, setIsLoading] = useState(true);
-	const [isSubmitting, setIsSubmitting] = useState(false);
 	const [isLoggedIn, setIsLoggedIn] = useState(false);
 	const [userExists, setUserExists] = useState(false);
 	const [status, setStatus] = useState<"pending" | "accepted" | "rejected">(
-		"pending"
-	)
+		"pending",
+	);
 
 	const signupForm = useForm<SignupFormValues>({
 		resolver: zodResolver(signupSchema),
 		defaultValues: { name: "", password: "", confirmPassword: "" },
-	})
+	});
 
 	const loginForm = useForm<LoginFormValues>({
 		resolver: zodResolver(loginSchema),
 		defaultValues: { password: "" },
-	})
+	});
+
+	// Mutations
+	const signUpMutation = useMutation(orpc.auth.signUp.mutationOptions({}));
+	const signInMutation = useMutation(orpc.auth.signIn.mutationOptions({}));
+	const acceptMutation = useMutation(
+		orpc.organization.acceptInvitation.mutationOptions({}),
+	);
+	const rejectMutation = useMutation(
+		orpc.organization.rejectInvitation.mutationOptions({}),
+	);
 
 	useEffect(() => {
 		loadInvitation();
@@ -88,29 +104,24 @@ function InvitePage() {
 	const loadInvitation = async () => {
 		setIsLoading(true);
 		try {
-			// Check if user is already logged in
+			// Check if user is already logged in (keep authClient for session)
 			const session = await authClient.getSession();
 			if (session.data?.user) {
 				setIsLoggedIn(true);
 			}
 
-			// Get invitation details (this endpoint doesn't require auth)
-			const res = await authClient.organization.getInvitation({
-				query: { id: inviteId },
-			})
+			// Get invitation details via oRPC
+			const invData = await orpc.organization.getInvitation.call({
+				invitationId: inviteId,
+			});
 
-			if (res.error || !res.data) {
-				toast.error(res.error?.message || "Invalid or expired invitation");
+			if (!invData) {
+				toast.error("Invalid or expired invitation");
 				setInvitation(null);
-				return
+				return;
 			}
 
-			const inv = res.data as InvitationData;
-			setInvitation(inv);
-
-			// Check if user with this email already exists
-			// We'll determine this by trying to see if they can login
-			// For now, default to signup tab - user can switch to login if they have account
+			setInvitation(invData as InvitationData);
 			setUserExists(false);
 		} catch (error) {
 			console.error("Failed to load invitation:", error);
@@ -118,26 +129,20 @@ function InvitePage() {
 		} finally {
 			setIsLoading(false);
 		}
-	}
+	};
 
 	const acceptInvitation = async () => {
-		const res = await authClient.organization.acceptInvitation({
-			invitationId: inviteId,
-		})
-
-		if (res.error) {
-			throw new Error(res.error.message || "Failed to accept invitation");
-		}
+		await acceptMutation.mutateAsync({ invitationId: inviteId });
 
 		// Set this organization as active
-		const orgsRes = await authClient.organization.list();
-		const targetOrg = orgsRes.data?.find(
-			(org) => org.name === invitation?.organizationName
-		)
+		const orgsData = await orpc.organization.list.call({});
+		const targetOrg = orgsData?.find(
+			(org: any) => org.name === invitation?.organizationName,
+		);
 		if (targetOrg) {
-			await authClient.organization.setActive({
+			await orpc.organization.setActive.call({
 				organizationId: targetOrg.id,
-			})
+			});
 		}
 
 		setStatus("accepted");
@@ -146,100 +151,76 @@ function InvitePage() {
 		setTimeout(() => {
 			navigate({ to: "/" });
 		}, 2000);
-	}
+	};
 
 	const onSignupSubmit = async (data: SignupFormValues) => {
 		if (!invitation) return;
 
-		setIsSubmitting(true);
 		try {
 			// 1. Create account with the invited email
-			const signupRes = await authClient.signUp.email({
+			await signUpMutation.mutateAsync({
 				email: invitation.email,
 				name: data.name,
 				password: data.password,
-			})
-
-			if (signupRes.error || !signupRes.data) {
-				toast.error(signupRes.error?.message || "Failed to create account");
-				return
-			}
+			});
 
 			// 2. Accept the invitation
 			await acceptInvitation();
 		} catch (error) {
 			console.error("Signup failed:", error);
 			toast.error(
-				error instanceof Error ? error.message : "Failed to join organization"
-			)
-		} finally {
-			setIsSubmitting(false);
+				error instanceof Error ? error.message : "Failed to join organization",
+			);
 		}
-	}
+	};
 
 	const onLoginSubmit = async (data: LoginFormValues) => {
 		if (!invitation) return;
 
-		setIsSubmitting(true);
 		try {
 			// 1. Login with the invited email
-			const loginRes = await authClient.signIn.email({
+			await signInMutation.mutateAsync({
 				email: invitation.email,
 				password: data.password,
-			})
-
-			if (loginRes.error || !loginRes.data) {
-				toast.error(loginRes.error?.message || "Invalid password");
-				return
-			}
+			});
 
 			// 2. Accept the invitation
 			await acceptInvitation();
 		} catch (error) {
 			console.error("Login failed:", error);
 			toast.error(
-				error instanceof Error ? error.message : "Failed to join organization"
-			)
-		} finally {
-			setIsSubmitting(false);
+				error instanceof Error ? error.message : "Failed to join organization",
+			);
 		}
-	}
+	};
 
 	const handleAcceptLoggedIn = async () => {
-		setIsSubmitting(true);
 		try {
 			await acceptInvitation();
 		} catch (error) {
 			console.error("Accept failed:", error);
 			toast.error(
-				error instanceof Error ? error.message : "Failed to accept invitation"
-			)
-		} finally {
-			setIsSubmitting(false);
+				error instanceof Error ? error.message : "Failed to accept invitation",
+			);
 		}
-	}
+	};
 
 	const handleReject = async () => {
-		setIsSubmitting(true);
 		try {
-			const res = await authClient.organization.rejectInvitation({
-				invitationId: inviteId,
-			})
-
-			if (res.error) {
-				toast.error(res.error.message || "Failed to reject invitation");
-				return
-			}
-
+			await rejectMutation.mutateAsync({ invitationId: inviteId });
 			setStatus("rejected");
 			toast.success("Invitation declined");
 		} catch (error) {
 			console.error("Failed to reject invitation:", error);
 			toast.error("Failed to reject invitation");
-		} finally {
-			setIsSubmitting(false);
 		}
-	}
+	};
+
+	const isSubmitting =
+		signUpMutation.isPending ||
+		signInMutation.isPending ||
+		acceptMutation.isPending ||
+		rejectMutation.isPending;
 
 	// Loading state
 	if (isLoading) {
@@ -258,7 +239,7 @@ function InvitePage() {
 					</CardContent>
 				</Card>
 			</div>
-		)
+		);
 	}
 
 	// Invalid invitation
@@ -269,7 +250,7 @@ function InvitePage() {
 					<CardHeader className="text-center">
 						<div className="flex justify-center mb-4">
 							<div className="rounded-full bg-destructive/10 p-3">
-								<XCircle className="size-8 text-destructive" />
+								<IconCircleX className="size-8 text-destructive" />
 							</div>
 						</div>
 						<CardTitle>Invalid Invitation</CardTitle>
@@ -284,7 +265,7 @@ function InvitePage() {
 					</CardContent>
 				</Card>
 			</div>
-		)
+		);
 	}
 
 	// Accepted state
@@ -295,7 +276,7 @@ function InvitePage() {
 					<CardHeader className="text-center">
 						<div className="flex justify-center mb-4">
 							<div className="rounded-full bg-primary/10 p-3">
-								<CheckCircle2 className="size-8 text-primary" />
+								<IconCircleCheck className="size-8 text-primary" />
 							</div>
 						</div>
 						<CardTitle>Welcome!</CardTitle>
@@ -306,7 +287,7 @@ function InvitePage() {
 					</CardHeader>
 				</Card>
 			</div>
-		)
+		);
 	}
 
 	// Rejected state
@@ -317,7 +298,7 @@ function InvitePage() {
 					<CardHeader className="text-center">
 						<div className="flex justify-center mb-4">
 							<div className="rounded-full bg-muted p-3">
-								<XCircle className="size-8 text-muted-foreground" />
+								<IconCircleX className="size-8 text-muted-foreground" />
 							</div>
 						</div>
 						<CardTitle>Invitation Declined</CardTitle>
@@ -336,7 +317,7 @@ function InvitePage() {
 					</CardContent>
 				</Card>
 			</div>
-		)
+		);
 	}
 
 	// Already logged in - just show accept/reject
@@ -347,7 +328,7 @@ function InvitePage() {
 					<CardHeader className="text-center">
 						<div className="flex justify-center mb-4">
 							<div className="rounded-full bg-primary/10 p-3">
-								<Building2 className="size-8 text-primary" />
+								<IconBuilding className="size-8 text-primary" />
 							</div>
 						</div>
 						<CardTitle>You're Invited!</CardTitle>
@@ -373,9 +354,9 @@ function InvitePage() {
 							Decline
 						</Button>
 						<Button onClick={handleAcceptLoggedIn} disabled={isSubmitting}>
-							{isSubmitting ? (
+							{acceptMutation.isPending ? (
 								<>
-									<Loader2 className="mr-2 size-4 animate-spin" />
+									<IconLoader2 className="mr-2 size-4 animate-spin" />
 									Accepting...
 								</>
 							) : (
@@ -385,7 +366,7 @@ function InvitePage() {
 					</CardContent>
 				</Card>
 			</div>
-		)
+		);
 	}
 
 	// Not logged in - show signup/login form
@@ -395,7 +376,7 @@ function InvitePage() {
 				<CardHeader className="text-center">
 					<div className="flex justify-center mb-4">
 						<div className="rounded-full bg-primary/10 p-3">
-							<Building2 className="size-8 text-primary" />
+							<IconBuilding className="size-8 text-primary" />
 						</div>
 					</div>
 					<CardTitle>You're Invited!</CardTitle>
@@ -489,9 +470,9 @@ function InvitePage() {
 										className="w-full"
 										disabled={isSubmitting}
 									>
-										{isSubmitting ? (
+										{signUpMutation.isPending ? (
 											<>
-												<Loader2 className="mr-2 size-4 animate-spin" />
+												<IconLoader2 className="mr-2 size-4 animate-spin" />
 												Creating account...
 											</>
 										) : (
@@ -531,9 +512,9 @@ function InvitePage() {
 										className="w-full"
 										disabled={isSubmitting}
 									>
-										{isSubmitting ? (
+										{signInMutation.isPending ? (
 											<>
-												<Loader2 className="mr-2 size-4 animate-spin" />
+												<IconLoader2 className="mr-2 size-4 animate-spin" />
 												Signing in...
 											</>
 										) : (
@@ -547,5 +528,5 @@ function InvitePage() {
 				</CardContent>
 			</Card>
 		</div>
-	)
+	);
 }

@@ -4,7 +4,7 @@ import { admin, emailOTP, organization, bearer } from "better-auth/plugins";
 
 import { db } from "@repo/db";
 import * as schema from "@repo/db/schema";
-import { sendOTPEmail, sendInvitationEmail } from "../services/auth.service";
+import { sendOTPEmail, sendInvitationEmail } from "../services/email.service";
 import { env } from "./env";
 
 export const auth = betterAuth({
@@ -23,7 +23,7 @@ export const auth = betterAuth({
 					data.email,
 					data.inviter.user.name,
 					data.organization.name,
-					inviteLink
+					inviteLink,
 				);
 			},
 		}),

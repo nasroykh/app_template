@@ -11,9 +11,14 @@ import {
 	ChartTooltip,
 	ChartTooltipContent,
 } from "@/components/ui/chart";
-import { DollarSign, Users, Activity, TrendingUp } from "lucide-react";
 import { Area, AreaChart, Bar, BarChart, XAxis, YAxis } from "recharts";
 import { Layout } from "@/components/layout/layout";
+import {
+	IconActivity,
+	IconCurrencyDollar,
+	IconTrendingUp,
+	IconUsers,
+} from "@tabler/icons-react";
 
 export const Route = createFileRoute("/_auth/")({
 	component: Dashboard,
@@ -24,25 +29,25 @@ const stats = [
 		title: "Total Revenue",
 		value: "$45,231.89",
 		change: "+20.1%",
-		icon: DollarSign,
+		icon: IconCurrencyDollar,
 	},
 	{
 		title: "Active Users",
 		value: "2,350",
 		change: "+180.1%",
-		icon: Users,
+		icon: IconUsers,
 	},
 	{
 		title: "Active Sessions",
 		value: "12,234",
 		change: "+19%",
-		icon: Activity,
+		icon: IconActivity,
 	},
 	{
 		title: "Growth Rate",
 		value: "+573",
 		change: "+201",
-		icon: TrendingUp,
+		icon: IconTrendingUp,
 	},
 ];
 

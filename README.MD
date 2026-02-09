@@ -4,13 +4,14 @@ A comprehensive, type-safe full-stack web application starter kit built with a m
 
 ## Project Overview
 
-This project is a monorepo using **pnpm workspaces**, featuring a React frontend, a Hono backend, and a shared PostgreSQL/Drizzle database package.
+This project is a monorepo using **pnpm workspaces** + **Turborepo**, featuring a React frontend, a Hono backend, and a shared PostgreSQL/Drizzle database package.
 
 **Key Technologies:**
 
-- **Frontend:** React 19, Vite, TypeScript, TanStack Router, TanStack Query, ORPC Client, Tailwind CSS 4, Base UI.
-- **Backend:** Node.js, Hono, ORPC, Better Auth, PostgreSQL, Drizzle ORM.
-- **Database:** PostgreSQL, Drizzle ORM, Drizzle Kit.
+- **Frontend:** React 19, Vite, TypeScript, TanStack Router, TanStack Query, ORPC Client, Tailwind CSS 4, Base UI, Tabler Icons, Jotai, shadcn-style components.
+- **Backend:** Node.js, Hono, ORPC, Better Auth, PostgreSQL, Drizzle ORM, Nodemailer.
+- **Database:** PostgreSQL, Drizzle ORM, Drizzle Kit, Zod (via drizzle-zod).
+- **Validation:** Zod 4 across both frontend and backend.
 
 ## Getting Started
 
@@ -31,8 +32,14 @@ This project is a monorepo using **pnpm workspaces**, featuring a React frontend
 2.  **Environment Setup:**
 
     - Configure `.env` files in `apps/api` and `packages/db` based on their `.env.example` templates.
+    - Configure Database, Auth, and SMTP details.
 
-3.  **Run Development Mode:**
+3.  **Generate Auth Schema (if needed):**
+    ```bash
+    pnpm auth:generate
+    ```
+
+4.  **Run Development Mode:**
     ```bash
     pnpm dev
     ```
@@ -42,26 +49,50 @@ This project is a monorepo using **pnpm workspaces**, featuring a React frontend
 
 ## Features
 
-- **End-to-End Type Safety**: Shared types between backend and frontend via ORPC.
-- **Robust Authentication**: Powered by Better Auth with support for multiple providers and sessions.
-- **Modern Styling**: Utility-first styling with Tailwind CSS 4 and accessible components from Base UI.
-- **Type-Safe Routing**: Routing with TanStack Router.
+- **End-to-End Type Safety**: Shared types between backend and frontend via ORPC. Backend route types flow to frontend via `AppRouter` type export → ORPC client → TanStack Query hooks.
+- **Robust Authentication**: Powered by Better Auth with support for multiple providers, sessions, and roles (admin/user).
+- **Modern Styling**: Utility-first styling with Tailwind CSS 4, accessible components from Base UI, and shadcn-style UI primitives.
+- **Type-Safe Routing**: File-based routing with TanStack Router, including protected (`_auth`) and guest-only (`_notauth`) layout routes.
 - **Database Management**: Easy migrations and schema management with Drizzle ORM and Drizzle Kit.
+- **State Management**: Server state via TanStack Query/ORPC, global client state via Jotai.
 
 ## Structure
 
-- `apps/api`: Hono-based backend API.
-- `apps/app`: React-based frontend application.
-- `packages/db`: Shared database schema and Drizzle client.
+- `apps/api`: Hono-based backend API with ORPC routers and services.
+- `apps/app`: React-based frontend application with TanStack Router.
+- `packages/db`: Shared database schema, Drizzle client, models, and types.
+- `packages/tsconfig`: Shared TypeScript configuration.
+- `packages/eslint-config`: Shared ESLint configuration.
 
 ## Scripts
 
-- `pnpm dev`: Start all services in development mode.
-- `pnpm build`: Build all packages for production.
-- `pnpm db:generate`: Generate database migrations.
-- `pnpm db:migrate`: Run database migrations.
-- `pnpm db:push`: Push local schema changes to the database.
+```bash
+pnpm install          # Install all dependencies
+pnpm dev              # Start all services (frontend :33460, backend :33450)
+pnpm build            # Build all packages
+pnpm lint             # Lint all packages
+pnpm start            # Run production build
+
+# Database (runs against packages/db)
+pnpm db:generate      # Generate Drizzle migrations
+pnpm db:migrate       # Run migrations
+pnpm db:push          # Push schema changes directly (dev only)
+pnpm auth:generate    # Regenerate Better Auth schema into packages/db
+
+# Run a single app
+pnpm --filter api dev
+pnpm --filter app dev
+pnpm --filter @repo/db db:studio   # Open Drizzle Studio
+```
+
+## Development Conventions
+
+- **Adding an API route**: Create file in `apps/api/src/router/routes/`, use `publicProcedure`/`authProcedure`/`adminProcedure` from `middleware.ts`, add to router in `router/index.ts`.
+- **Adding a page**: Create file in `apps/app/src/routes/` following TanStack Router file conventions. Put under `_auth/` for protected pages, `_notauth/` for guest-only pages.
+- **DB schema changes**: Edit models in `packages/db/src/models/`, run `pnpm db:generate` then `pnpm db:migrate`.
+- **Validation**: Shared Zod schemas between frontend and backend for input validation and data integrity.
+- **API Design**: Routes follow a structured pattern with `PREFIX` (e.g., `/api/v1`) and categorization.
 
 ---
 
-For more detailed information, please refer to [GEMINI.md](./GEMINI.md).
+For more detailed information, refer to [GEMINI.md](./GEMINI.md) and [CLAUDE.md](./CLAUDE.md).

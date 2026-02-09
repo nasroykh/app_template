@@ -1,5 +1,4 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
-import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
@@ -20,12 +19,13 @@ import {
 	FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import { Loader2 } from "lucide-react";
-import { authClient } from "@/lib/auth";
+import { IconLoader2 } from "@tabler/icons-react";
+import { orpc } from "@/lib/orpc";
 import { ensureActiveOrganization } from "@/lib/organization";
 import { toast } from "sonner";
 import { useSetAtom } from "jotai";
 import { tokenAtom, userAtom } from "@/atoms/auth";
+import { useMutation } from "@tanstack/react-query";
 
 export const Route = createFileRoute("/_notauth/auth/login")({
 	component: RouteComponent,
@@ -41,7 +41,6 @@ type LoginFormValues = z.infer<typeof loginSchema>;
 function RouteComponent() {
 	const $setUser = useSetAtom(userAtom);
 	const $setToken = useSetAtom(tokenAtom);
-	const [isLoading, setIsLoading] = useState(false);
 	const navigate = useNavigate();
 
 	const form = useForm<LoginFormValues>({
@@ -52,35 +51,35 @@ function RouteComponent() {
 		},
 	});
 
-	const onSubmit = async (data: LoginFormValues) => {
-		setIsLoading(true);
+	const signInMutation = useMutation(
+		orpc.auth.signIn.mutationOptions({
+			onSuccess: async (data: any) => {
+				if (!data || !data.user) {
+					toast.error("Invalid credentials");
+					return;
+				}
 
-		try {
-			const res = await authClient.signIn.email({
-				email: data.email,
-				password: data.password,
-				rememberMe: true,
-			});
+				// Ensure user has an active organization
+				await ensureActiveOrganization(data.user.name);
 
-			if (!res.data || res.error) {
-				toast.error((res.error && res.error.message) || "Invalid credentials");
-				return;
-			}
+				$setUser(data.user);
+				$setToken(data.token);
 
-			// Ensure user has an active organization
-			await ensureActiveOrganization(res.data.user.name);
+				toast.success("Login successful");
+				navigate({ to: "/" });
+			},
+			onError: (error: any) => {
+				console.error("Login failed:", error);
+				toast.error(error.message || "Login failed");
+			},
+		}),
+	);
 
-			$setUser(res.data.user);
-			$setToken(res.data.token);
-
-			toast.success("Login successful");
-			navigate({ to: "/" });
-		} catch (error) {
-			console.error("Login failed:", error);
-			toast.error("Login failed");
-		} finally {
-			setIsLoading(false);
-		}
+	const onSubmit = (data: LoginFormValues) => {
+		signInMutation.mutate({
+			email: data.email,
+			password: data.password,
+		});
 	};
 
 	return (
@@ -107,7 +106,7 @@ function RouteComponent() {
 												placeholder="name@example.com"
 												type="email"
 												{...field}
-												disabled={isLoading}
+												disabled={signInMutation.isPending}
 											/>
 										</FormControl>
 										<FormMessage />
@@ -127,7 +126,7 @@ function RouteComponent() {
 												placeholder="Enter your password"
 												type="password"
 												{...field}
-												disabled={isLoading}
+												disabled={signInMutation.isPending}
 											/>
 										</FormControl>
 										<FormMessage />
@@ -149,11 +148,11 @@ function RouteComponent() {
 							<Button
 								type="submit"
 								className="w-full mt-6"
-								disabled={isLoading}
+								disabled={signInMutation.isPending}
 							>
-								{isLoading ? (
+								{signInMutation.isPending ? (
 									<>
-										<Loader2 className="mr-2 h-4 w-4 animate-spin" />
+										<IconLoader2 className="mr-2 h-4 w-4 animate-spin" />
 										Signing in...
 									</>
 								) : (

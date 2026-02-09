@@ -36,10 +36,11 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { themeAtom, type Theme } from "@/atoms/global";
 import { useAtom, useAtomValue } from "jotai";
-import { authClient } from "@/lib/auth";
+import { orpc } from "@/lib/orpc";
 import { toast } from "sonner";
 import { useNavigate } from "@tanstack/react-router";
 import { userAtom } from "@/atoms/auth";
+import { useMutation } from "@tanstack/react-query";
 
 const navItems = [{ title: "Dashboard", icon: IconHome, href: "/" }];
 
@@ -56,18 +57,20 @@ export function AppSidebar() {
 			{ value: "system", label: "System", icon: IconDeviceDesktop },
 		];
 
-	const handleLogout = async () => {
-		try {
-			const res = await authClient.signOut();
-			if (!res.data || res.error) {
-				toast.error((res.error && res.error.message) || "Failed to logout");
-				return;
-			}
-			navigate({ to: "/auth/login" });
-		} catch (error) {
-			console.error("Logout failed:", error);
-			toast.error("Logout failed");
-		}
+	const signOutMutation = useMutation(
+		orpc.auth.signOut.mutationOptions({
+			onSuccess: () => {
+				navigate({ to: "/auth/login" });
+			},
+			onError: (error: any) => {
+				console.error("Logout failed:", error);
+				toast.error(error.message || "Logout failed");
+			},
+		}),
+	);
+
+	const handleLogout = () => {
+		signOutMutation.mutate({});
 	};
 
 	return (
@@ -105,7 +108,6 @@ export function AppSidebar() {
 												? location.pathname === item.href
 												: location.pathname.startsWith(item.href)
 										}
-										tooltip={item.title}
 									>
 										{item.href !== "#" ? (
 											<>

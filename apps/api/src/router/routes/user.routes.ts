@@ -32,7 +32,7 @@ const createUserSchema = z.object({
 	email: z.email(),
 	password: z.string().min(8),
 	name: z.string().min(1),
-	role: roleSchema.or(z.array(roleSchema)).optional(),
+	role: roleSchema.or(z.array(roleSchema)),
 	data: z.record(z.string(), z.unknown()).optional(),
 });
 
@@ -51,7 +51,29 @@ const listUsersSchema = z.object({
 
 const updateUserSchema = z.object({
 	userId: z.string(),
-	data: z.record(z.string(), z.unknown()),
+	data: z
+		.object({
+			name: z.string().min(1).optional(),
+			email: z.email().optional(),
+			image: z.string().optional(),
+			emailVerified: z.boolean().optional(),
+		})
+		.catchall(z.unknown()),
+});
+
+const bulkDeleteUsersSchema = z.object({
+	userIds: z.array(z.string()).min(1).max(100),
+});
+
+const bulkSetUserRoleSchema = z.object({
+	userIds: z.array(z.string()).min(1).max(100),
+	role: roleSchema.or(z.array(roleSchema)),
+});
+
+const bulkBanUsersSchema = z.object({
+	userIds: z.array(z.string()).min(1).max(100),
+	banReason: z.string().optional(),
+	banExpiresIn: z.number().optional(),
 });
 
 const setUserRoleSchema = z.object({
@@ -93,7 +115,7 @@ export const userRoutes = {
 			z.object({
 				email: z.email(),
 				password: z.string().min(8),
-			})
+			}),
 		)
 		.handler(async ({ input, context }) => {
 			const user = await loginUser(input, context.headers);
@@ -163,7 +185,7 @@ export const userRoutes = {
 					filterOperator: "eq",
 					limit: 1,
 				},
-				context.headers
+				context.headers,
 			);
 
 			if (!result.users || result.users.length === 0) {
@@ -335,5 +357,94 @@ export const userRoutes = {
 		.handler(async ({ context }) => {
 			await stopImpersonating(context.headers);
 			return { message: "Stopped impersonating" };
+		}),
+
+	// -------------------------------------------------------------------------
+	// Bulk Delete Users
+	// -------------------------------------------------------------------------
+	bulkDeleteUsers: adminProcedure
+		.route({
+			method: "POST",
+			path: `${PREFIX}/admin/users/bulk-delete`,
+			description: "Bulk delete users (Admin only)",
+		})
+		.input(bulkDeleteUsersSchema)
+		.handler(async ({ input, context }) => {
+			const results = await Promise.allSettled(
+				input.userIds.map((userId) => removeUser(userId, context.headers)),
+			);
+
+			const successful = results.filter((r) => r.status === "fulfilled").length;
+			const failed = results.filter((r) => r.status === "rejected").length;
+
+			return {
+				message: `Deleted ${successful} users successfully, ${failed} failed`,
+				successful,
+				failed,
+				total: input.userIds.length,
+			};
+		}),
+
+	// -------------------------------------------------------------------------
+	// Bulk Set User Role
+	// -------------------------------------------------------------------------
+	bulkSetUserRole: adminProcedure
+		.route({
+			method: "POST",
+			path: `${PREFIX}/admin/users/bulk-role`,
+			description: "Bulk set user roles (Admin only)",
+		})
+		.input(bulkSetUserRoleSchema)
+		.handler(async ({ input, context }) => {
+			const results = await Promise.allSettled(
+				input.userIds.map((userId) =>
+					setUserRole({ userId, role: input.role }, context.headers),
+				),
+			);
+
+			const successful = results.filter((r) => r.status === "fulfilled").length;
+			const failed = results.filter((r) => r.status === "rejected").length;
+
+			return {
+				message: `Updated ${successful} users successfully, ${failed} failed`,
+				successful,
+				failed,
+				total: input.userIds.length,
+			};
+		}),
+
+	// -------------------------------------------------------------------------
+	// Bulk Ban Users
+	// -------------------------------------------------------------------------
+	bulkBanUsers: adminProcedure
+		.route({
+			method: "POST",
+			path: `${PREFIX}/admin/users/bulk-ban`,
+			description: "Bulk ban users (Admin only)",
+		})
+		.input(bulkBanUsersSchema)
+		.handler(async ({ input, context }) => {
+			const results = await Promise.allSettled(
+				input.userIds.map((userId) =>
+					banUser(
+						{
+							userId,
+							banReason: input.banReason,
+							banExpiresIn: input.banExpiresIn,
+						},
+						context.headers,
+					),
+				),
+			);
+
+			const successful = results.filter((r) => r.status === "fulfilled").length;
+			const failed = results.filter((r) => r.status === "rejected").length;
+
+			return {
+				message: `Banned ${successful} users successfully, ${failed} failed`,
+				successful,
+				failed,
+				total: input.userIds.length,
+			};
 		}),
 };

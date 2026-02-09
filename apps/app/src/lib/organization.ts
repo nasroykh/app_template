@@ -1,4 +1,4 @@
-import { authClient } from "./auth";
+import { orpc } from "./orpc";
 
 /**
  * Ensures the user has an active organization.
@@ -8,47 +8,48 @@ import { authClient } from "./auth";
  * @returns The active organization ID, or null if setup failed
  */
 export async function ensureActiveOrganization(
-	userName: string
+	userName: string,
 ): Promise<string | null> {
 	try {
-		const orgsRes = await authClient.organization.list();
+		// Get all organizations for user
+		const orgsData = await orpc.organization.list.call({});
 
-		if (!orgsRes.data?.length) {
+		if (!orgsData?.length) {
 			// User has no organizations - create a default one
 			const slug = userName
 				.toLowerCase()
 				.replace(/[^a-z0-9]+/g, "-")
 				.replace(/^-|-$/g, "");
 
-			const orgRes = await authClient.organization.create({
+			const orgData = await orpc.organization.create.call({
 				name: `${userName}'s Organization`,
 				slug: `${slug}-${Date.now()}`,
 			});
 
-			if (orgRes.error || !orgRes.data) {
-				console.error("Failed to create organization:", orgRes.error);
+			if (!orgData) {
+				console.error("Failed to create organization");
 				return null;
 			}
 
-			await authClient.organization.setActive({
-				organizationId: orgRes.data.id,
+			await orpc.organization.setActive.call({
+				organizationId: orgData.id,
 			});
 
-			return orgRes.data.id;
+			return orgData.id;
 		}
 
 		// User has organizations - ensure one is active
-		const activeOrg = await authClient.organization.getFullOrganization();
-		if (activeOrg.data) {
-			return activeOrg.data.id;
+		const activeOrg = await orpc.organization.getFullOrganization.call({});
+		if (activeOrg) {
+			return activeOrg.id;
 		}
 
 		// No active org, set the first one
-		if (orgsRes.data[0]) {
-			await authClient.organization.setActive({
-				organizationId: orgsRes.data[0].id,
+		if (orgsData[0]) {
+			await orpc.organization.setActive.call({
+				organizationId: orgsData[0].id,
 			});
-			return orgsRes.data[0].id;
+			return orgsData[0].id;
 		}
 
 		return null;

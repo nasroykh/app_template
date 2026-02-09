@@ -1,42 +1,138 @@
-import { transporter } from "../config/nodemailer";
-import {
-	OTP_EMAIL_HTML,
-	INVITATION_EMAIL_HTML,
-} from "../utils/email_templates";
+import { auth } from "../config/auth";
 
-export const sendOTPEmail = async (to: string, otp: string) => {
-	const mailOptions = {
-		to,
-		subject: "Your One-Time Password (OTP)",
-		html: OTP_EMAIL_HTML(otp),
-	};
+// =============================================================================
+// Types
+// =============================================================================
 
-	try {
-		await transporter.sendMail(mailOptions);
-		console.log(`OTP email sent to ${to}`);
-	} catch (error) {
-		console.error(`Error sending OTP email to ${to}:`, error);
-		throw new Error("Failed to send OTP email");
-	}
+export type SignInInput = {
+	email: string;
+	password: string;
 };
 
-export const sendInvitationEmail = async (
-	to: string,
-	inviterName: string,
-	organizationName: string,
-	inviteLink: string
-) => {
-	const mailOptions = {
-		to,
-		subject: `You've been invited to join ${organizationName}`,
-		html: INVITATION_EMAIL_HTML(inviterName, organizationName, inviteLink),
-	};
-
-	try {
-		await transporter.sendMail(mailOptions);
-		console.log(`Invitation email sent to ${to}`);
-	} catch (error) {
-		console.error(`Error sending invitation email to ${to}:`, error);
-		throw new Error("Failed to send invitation email");
-	}
+export type SignUpInput = {
+	email: string;
+	password: string;
+	name: string;
 };
+
+export type VerifyEmailInput = {
+	email: string;
+	otp: string;
+};
+
+export type ResetPasswordInput = {
+	email: string;
+	otp: string;
+	newPassword: string;
+};
+
+export type UpdateProfileInput = {
+	name?: string;
+	image?: string;
+};
+
+// =============================================================================
+// Auth Operations
+// =============================================================================
+
+export async function signInEmail(input: SignInInput, headers: Headers) {
+	return auth.api.signInEmail({
+		body: {
+			email: input.email,
+			password: input.password,
+		},
+		headers,
+	});
+}
+
+export async function signUpEmail(input: SignUpInput, headers: Headers) {
+	return auth.api.signUpEmail({
+		body: {
+			email: input.email,
+			password: input.password,
+			name: input.name,
+		},
+		headers,
+	});
+}
+
+export async function signOut(headers: Headers) {
+	return auth.api.signOut({
+		headers,
+	});
+}
+
+export async function getSession(headers: Headers) {
+	return auth.api.getSession({
+		headers,
+	});
+}
+
+// =============================================================================
+// Email OTP Operations
+// =============================================================================
+
+export async function sendVerificationOtp(email: string, headers: Headers) {
+	return auth.api.sendVerificationOTP({
+		body: { email, type: "email-verification" },
+		headers,
+	});
+}
+
+export async function verifyEmailOtp(
+	input: VerifyEmailInput,
+	headers: Headers,
+) {
+	return auth.api.verifyEmailOTP({
+		body: {
+			email: input.email,
+			otp: input.otp,
+		},
+		headers,
+	});
+}
+
+export async function forgetPasswordOtp(email: string, headers: Headers) {
+	return auth.api.forgetPasswordEmailOTP({
+		body: { email },
+		headers,
+	});
+}
+
+export async function checkVerificationOtp(
+	input: VerifyEmailInput,
+	headers: Headers,
+) {
+	return auth.api.checkVerificationOTP({
+		body: { email: input.email, otp: input.otp, type: "forget-password" },
+		headers,
+	});
+}
+
+export async function resetPasswordWithOtp(
+	input: ResetPasswordInput,
+	headers: Headers,
+) {
+	return auth.api.resetPasswordEmailOTP({
+		body: {
+			email: input.email,
+			otp: input.otp,
+			password: input.newPassword,
+		},
+		headers,
+	});
+}
+
+// =============================================================================
+// Profile Operations
+// =============================================================================
+
+export async function updateProfile(
+	input: UpdateProfileInput,
+	headers: Headers,
+) {
+	return auth.api.updateUser({
+		body: input,
+		headers,
+	});
+}

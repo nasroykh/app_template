@@ -4,9 +4,9 @@ This is the backend service for the application, built with **Hono** and **ORPC*
 
 ## Technologies
 
-- **Framework**: [Hono](https://hono.dev/) running on Node.js.
-- **API Engine**: [ORPC](https://orpc.run/) for type-safe procedures.
-- **Authentication**: [Better Auth](https://www.better-auth.com/).
+- **Framework**: [Hono](https://hono.dev/) running on `@hono/node-server`.
+- **API Engine**: [ORPC](https://orpc.run/) for type-safe procedures with OpenAPI/Scalar support.
+- **Authentication**: [Better Auth](https://www.better-auth.com/) with Drizzle adapter.
 - **Database ORM**: [Drizzle ORM](https://orm.drizzle.team/) (using `@repo/db` package).
 - **Email**: [Nodemailer](https://nodemailer.com/).
 - **Validation**: [Zod](https://zod.dev/).
@@ -25,24 +25,36 @@ Ensure you have a `.env` file with the following:
 ### Development
 
 ```bash
-pnpm dev
+pnpm dev          # Start with tsx watch (auto-reload)
 ```
 
 ### Production
 
 ```bash
-pnpm build
-pnpm start
+pnpm build        # Compile TypeScript to dist/
+pnpm start        # Run production build
 ```
 
-## Directory Structure
+## Architecture
 
-- `src/index.ts`: Entry point of the server.
-- `src/config`: Environment and service configurations (auth, stripe, etc.).
-- `src/plugins`: Hono middleware and ORPC integration.
-- `src/router`: ORPC routers and procedures definition.
-- `src/services`: Business logic and external service integrations.
-- `src/utils`: Helper functions.
+- `src/index.ts`: Entry point — initializes DB, registers plugins (CORS, ORPC, OpenAPI/Scalar, Auth), serves on `@hono/node-server`.
+- `src/config/`: Environment and service configurations (`env.ts`, `auth.ts`, `nodemailer.ts`).
+- `src/plugins/`: Modular Hono middleware registration — CORS, ORPC handler, OpenAPI spec, Scalar docs UI, Better Auth handler.
+- `src/router/`: ORPC routers and procedure definitions.
+  - `middleware.ts`: Defines `publicProcedure`, `authProcedure`, `adminProcedure` with ORPC middleware chains that add auth context.
+  - `routes/`: Route files using ORPC procedures. Each file exports a route group.
+  - `index.ts`: Aggregates all routes into `router` object, exports `AppRouter` type consumed by the frontend.
+- `src/services/`: Business logic and external service integrations.
+- `src/utils/`: Helper functions.
+
+### Adding a Route
+
+1. Create `src/router/routes/your.routes.ts`
+2. Import a procedure from `../middleware` (`publicProcedure`, `authProcedure`, or `adminProcedure`)
+3. Define route with `.input()` (Zod schema) and `.handler()`
+4. Add to the router object in `src/router/index.ts`
+
+The `AppRouter` type is exported via `package.json` `"./orpc"` export so the frontend can import it for end-to-end type safety.
 
 ## API Documentation
 

@@ -8,6 +8,7 @@ import {
 	IconMoon,
 	IconDeviceDesktop,
 	IconCheck,
+	IconBuilding,
 } from "@tabler/icons-react";
 
 import {
@@ -35,20 +36,19 @@ import {
 	DropdownMenuPortal,
 } from "@/components/ui/dropdown-menu";
 import { themeAtom, type Theme } from "@/atoms/global";
-import { useAtom, useAtomValue } from "jotai";
-import { orpc } from "@/lib/orpc";
+import { useAtom } from "jotai";
 import { toast } from "sonner";
 import { useNavigate } from "@tanstack/react-router";
-import { userAtom } from "@/atoms/auth";
-import { useMutation } from "@tanstack/react-query";
+import { authClient, type User } from "@/lib/auth";
 
 const navItems = [{ title: "Dashboard", icon: IconHome, href: "/" }];
 
-export function AppSidebar() {
+export function AppSidebar({ user }: { user?: User | null }) {
 	const location = useLocation();
 	const navigate = useNavigate();
-	const $user = useAtomValue(userAtom);
 	const [theme, setTheme] = useAtom(themeAtom);
+	const { data: activeOrg } = authClient.useActiveOrganization();
+	const { data: organizations } = authClient.useListOrganizations();
 
 	const themeOptions: { value: Theme; label: string; icon: typeof IconSun }[] =
 		[
@@ -57,20 +57,36 @@ export function AppSidebar() {
 			{ value: "system", label: "System", icon: IconDeviceDesktop },
 		];
 
-	const signOutMutation = useMutation(
-		orpc.auth.signOut.mutationOptions({
-			onSuccess: () => {
-				navigate({ to: "/auth/login" });
-			},
-			onError: (error: any) => {
-				console.error("Logout failed:", error);
-				toast.error(error.message || "Logout failed");
-			},
-		}),
-	);
+	const handleSwitchOrganization = async (organizationId: string) => {
+		if (organizationId === activeOrg?.id) return;
 
-	const handleLogout = () => {
-		signOutMutation.mutate({});
+		try {
+			await authClient.organization.setActive({
+				organizationId,
+			});
+
+			// Refetch session to get updated active organization
+			await authClient.getSession();
+
+			toast.success("Organization switched successfully");
+		} catch (error: any) {
+			toast.error(error.message || "Failed to switch organization");
+		}
+	};
+
+	const handleLogout = async () => {
+		try {
+			await authClient.signOut({
+				fetchOptions: {
+					onSuccess: () => {
+						navigate({ to: "/auth/login" });
+					},
+				},
+			});
+		} catch (error: any) {
+			console.error("Logout failed:", error);
+			toast.error(error.message || "Logout failed");
+		}
 	};
 
 	return (
@@ -138,11 +154,11 @@ export function AppSidebar() {
 									<SidebarMenuButton size="lg">
 										<Avatar className="size-8">
 											<AvatarImage
-												src={$user?.image || undefined}
+												src={user?.image || undefined}
 												alt="User avatar"
 											/>
 											<AvatarFallback className="bg-primary/10 text-primary text-xs">
-												{$user?.name
+												{user?.name
 													?.split(" ")
 													.map((n) => n[0])
 													.join("")
@@ -152,17 +168,17 @@ export function AppSidebar() {
 										</Avatar>
 										<div className="flex flex-col gap-0.5 leading-none text-left">
 											<span className="font-medium">
-												{$user?.name || "User"}
+												{user?.name || "User"}
 											</span>
 											<span className="text-xs text-muted-foreground">
-												{$user?.email || ""}
+												{user?.email || ""}
 											</span>
 										</div>
 									</SidebarMenuButton>
 								}
 							/>
 							<DropdownMenuContent
-								className="w-48"
+								className="w-56"
 								side="bottom"
 								align="center"
 							>
@@ -170,6 +186,30 @@ export function AppSidebar() {
 									<IconSettings className="mr-2 size-4" />
 									Settings
 								</DropdownMenuItem>
+								{organizations && organizations.length > 1 && (
+									<DropdownMenuSub>
+										<DropdownMenuSubTrigger>
+											<IconBuilding className="mr-2 size-4" />
+											Organization
+										</DropdownMenuSubTrigger>
+										<DropdownMenuPortal>
+											<DropdownMenuSubContent>
+												{organizations.map((org) => (
+													<DropdownMenuItem
+														key={org.id}
+														onClick={() => handleSwitchOrganization(org.id)}
+													>
+														<IconBuilding className="mr-2 size-4" />
+														<span className="flex-1 truncate">{org.name}</span>
+														{activeOrg?.id === org.id && (
+															<IconCheck className="ml-2 size-4" />
+														)}
+													</DropdownMenuItem>
+												))}
+											</DropdownMenuSubContent>
+										</DropdownMenuPortal>
+									</DropdownMenuSub>
+								)}
 								<DropdownMenuSub>
 									<DropdownMenuSubTrigger>
 										<IconSun className="mr-2 size-4" />

@@ -8,6 +8,10 @@ import { eq } from "@repo/db/drizzle-orm";
 export const registerAuth = (app: Hono) => {
 	initSuperAdmin();
 
+	// Mount the Better Auth handler.
+	// The config defines basePath: `${env.API_V1_PREFIX}/auth`,
+	// and the app (index.ts) is base-pathed to env.API_V1_PREFIX.
+	// So mounting at /auth/* here is correct.
 	app.on(["POST", "GET"], `/auth/*`, (c) => {
 		return auth.handler(c.req.raw);
 	});

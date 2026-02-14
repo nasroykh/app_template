@@ -49,14 +49,22 @@ import {
 } from "@tabler/icons-react";
 import { orpc } from "@/lib/orpc";
 import { toast } from "sonner";
-import { roleAtom } from "@/atoms/auth";
-import { useAtomValue } from "jotai";
+import { authClient, useSession } from "@/lib/auth";
 import { type Role, getRoleBadgeVariant } from "./types";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
 export function MembersTab() {
 	const queryClient = useQueryClient();
-	const $role = useAtomValue(roleAtom);
+	const { data: sessionData } = useSession();
+	const { data: activeOrg } = authClient.useActiveOrganization();
+
+	// Debug logging
+	console.log("[MembersTab] Session:", sessionData);
+	console.log("[MembersTab] Active Org:", activeOrg);
+
+	const $role = activeOrg?.members?.find(
+		(m) => m.userId === sessionData?.user?.id,
+	)?.role;
 
 	// Invite dialog state
 	const [inviteOpen, setInviteOpen] = useState(false);

@@ -9,7 +9,9 @@ const authMiddleware = base.middleware(async ({ context, next }) => {
 	});
 
 	if (!sessionData?.session || !sessionData?.user) {
-		throw new ORPCError("UNAUTHORIZED");
+		throw new ORPCError("UNAUTHORIZED", {
+			message: "Session expired or invalid",
+		});
 	}
 
 	// Adds session and user to the context

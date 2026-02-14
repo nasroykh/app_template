@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
@@ -21,11 +21,8 @@ import {
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { IconLoader2 } from "@tabler/icons-react";
-import { orpc } from "@/lib/orpc";
 import { toast } from "sonner";
-import { userAtom } from "@/atoms/auth";
-import { useAtomValue } from "jotai";
-import { useMutation } from "@tanstack/react-query";
+import { useSession, authClient } from "@/lib/auth";
 
 const profileSchema = z.object({
 	name: z.string().min(2, "Name must be at least 2 characters"),
@@ -35,7 +32,9 @@ const profileSchema = z.object({
 type ProfileFormValues = z.infer<typeof profileSchema>;
 
 export function ProfileTab() {
-	const user = useAtomValue(userAtom);
+	const { data: sessionData } = useSession();
+	const user = sessionData?.user;
+	const [isUpdating, setIsUpdating] = useState(false);
 
 	const form = useForm<ProfileFormValues>({
 		resolver: zodResolver(profileSchema),
@@ -54,19 +53,22 @@ export function ProfileTab() {
 		}
 	}, [user, form]);
 
-	const updateProfileMutation = useMutation(
-		orpc.auth.updateProfile.mutationOptions({
-			onSuccess: () => {
-				toast.success("Profile updated successfully");
-			},
-			onError: (error: any) => {
+	const onSubmit = async (values: ProfileFormValues) => {
+		setIsUpdating(true);
+		try {
+			const { error } = await authClient.updateUser({
+				name: values.name,
+			});
+			if (error) {
 				toast.error(error.message || "Failed to update profile");
-			},
-		}),
-	);
-
-	const onSubmit = (values: ProfileFormValues) => {
-		updateProfileMutation.mutate({ name: values.name });
+			} else {
+				toast.success("Profile updated successfully");
+			}
+		} catch (err: any) {
+			toast.error(err.message || "Failed to update profile");
+		} finally {
+			setIsUpdating(false);
+		}
 	};
 
 	return (
@@ -111,8 +113,8 @@ export function ProfileTab() {
 							)}
 						/>
 						<div className="flex justify-end pt-2">
-							<Button type="submit" disabled={updateProfileMutation.isPending}>
-								{updateProfileMutation.isPending ? (
+							<Button type="submit" disabled={isUpdating}>
+								{isUpdating ? (
 									<>
 										<IconLoader2 className="mr-2 size-4 animate-spin" />
 										Saving...

@@ -7,8 +7,7 @@ import {
 	IconShieldCheck,
 } from "@tabler/icons-react";
 import { Layout } from "@/components/layout/layout";
-import { roleAtom } from "@/atoms/auth";
-import { useAtomValue } from "jotai";
+import { useSession } from "@/lib/auth";
 import { ProfileTab } from "@/components/settings/profile-tab";
 import { OrganizationTab } from "@/components/settings/organization-tab";
 import { MembersTab } from "@/components/settings/members-tab";
@@ -19,7 +18,8 @@ export const Route = createFileRoute("/_auth/settings")({
 });
 
 function SettingsPage() {
-	const $role = useAtomValue(roleAtom);
+	const { data: sessionData } = useSession();
+	const isAdmin = sessionData?.user?.role === "admin";
 
 	return (
 		<Layout>
@@ -42,7 +42,7 @@ function SettingsPage() {
 							<IconUsers className="size-4" />
 							Members
 						</TabsTrigger>
-						{$role === "admin" && (
+						{isAdmin && (
 							<TabsTrigger value="users" className="gap-2 text-primary">
 								<IconShieldCheck className="size-4" />
 								Users (Admin)
@@ -62,7 +62,7 @@ function SettingsPage() {
 						<MembersTab />
 					</TabsContent>
 
-					{$role === "admin" && (
+					{isAdmin && (
 						<TabsContent value="users" className="space-y-4">
 							<UsersTab />
 						</TabsContent>

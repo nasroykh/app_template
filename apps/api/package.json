@@ -6,6 +6,9 @@
 		"./orpc": {
 			"types": "./src/router/index.ts",
 			"default": "./dist/router/index.js"
+		},
+		"./auth": {
+			"types": "./src/config/auth.ts"
 		}
 	},
 	"scripts": {

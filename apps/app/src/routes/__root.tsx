@@ -1,6 +1,12 @@
 import { Toaster } from "@/components/ui/sonner";
 import { ThemeProvider } from "@/components/theme-provider";
-import { createRootRoute, Outlet } from "@tanstack/react-router";
+import { createRootRouteWithContext, Outlet } from "@tanstack/react-router";
+import { authClient } from "@/lib/auth";
+import type { SessionData } from "@/main";
+
+type RouterContext = {
+	session: SessionData | undefined;
+};
 
 const RootLayout = () => {
 	return (
@@ -11,4 +17,12 @@ const RootLayout = () => {
 	);
 };
 
-export const Route = createRootRoute({ component: RootLayout });
+export const Route = createRootRouteWithContext<RouterContext>()({
+	beforeLoad: async () => {
+		const res = await authClient.getSession();
+		return {
+			session: res.data && !res.error ? res.data : null,
+		};
+	},
+	component: RootLayout,
+});

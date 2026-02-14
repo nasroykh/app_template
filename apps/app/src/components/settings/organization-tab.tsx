@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
@@ -19,12 +19,12 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { IconLoader2 } from "@tabler/icons-react";
+import { Badge } from "@/components/ui/badge";
+import { IconLoader2, IconCheck } from "@tabler/icons-react";
 import { orpc } from "@/lib/orpc";
 import { toast } from "sonner";
-import { roleAtom } from "@/atoms/auth";
-import { useAtomValue } from "jotai";
-import { useMutation, useQuery } from "@tanstack/react-query";
+import { authClient, useSession } from "@/lib/auth";
+import { useMutation } from "@tanstack/react-query";
 
 const orgSchema = z.object({
 	name: z.string().min(2, "Name must be at least 2 characters"),
@@ -34,7 +34,19 @@ const orgSchema = z.object({
 type OrgFormValues = z.infer<typeof orgSchema>;
 
 export function OrganizationTab() {
-	const $role = useAtomValue(roleAtom);
+	const { data: sessionData } = useSession();
+	const { data: activeOrg } = authClient.useActiveOrganization();
+	const { data: organizations } = authClient.useListOrganizations();
+	const [isSwitching, setIsSwitching] = useState(false);
+
+	// Debug logging
+	console.log("[OrganizationTab] Session:", sessionData);
+	console.log("[OrganizationTab] Active Org:", activeOrg);
+	console.log("[OrganizationTab] All Organizations:", organizations);
+
+	const $role = activeOrg?.members?.find(
+		(m) => m.userId === sessionData?.user?.id,
+	)?.role;
 
 	const form = useForm<OrgFormValues>({
 		resolver: zodResolver(orgSchema),
@@ -44,19 +56,14 @@ export function OrganizationTab() {
 		},
 	});
 
-	// Fetch current organization
-	const orgQuery = useQuery(
-		orpc.organization.getFullOrganization.queryOptions(),
-	);
-
 	useEffect(() => {
-		if (orgQuery.data) {
+		if (activeOrg) {
 			form.reset({
-				name: orgQuery.data.name,
-				slug: orgQuery.data.slug,
+				name: activeOrg.name,
+				slug: activeOrg.slug,
 			});
 		}
-	}, [orgQuery.data, form]);
+	}, [activeOrg, form]);
 
 	const updateOrgMutation = useMutation(
 		orpc.organization.update.mutationOptions({
@@ -76,15 +83,84 @@ export function OrganizationTab() {
 		});
 	};
 
+	const handleSwitchOrganization = async (organizationId: string) => {
+		if (organizationId === activeOrg?.id) return;
+
+		setIsSwitching(true);
+		try {
+			await authClient.organization.setActive({
+				organizationId,
+			});
+
+			// Refetch session to get updated active organization
+			await authClient.getSession();
+
+			toast.success("Organization switched successfully");
+		} catch (error: any) {
+			toast.error(error.message || "Failed to switch organization");
+		} finally {
+			setIsSwitching(false);
+		}
+	};
+
 	return (
-		<Card>
-			<CardHeader>
-				<CardTitle>Organization Settings</CardTitle>
-				<CardDescription>
-					Update your organization details and workspace settings
-				</CardDescription>
-			</CardHeader>
-			<CardContent>
+		<div className="space-y-6">
+			{/* Organization Switcher */}
+			{organizations && organizations.length > 1 && (
+				<Card>
+					<CardHeader>
+						<CardTitle>Switch Organization</CardTitle>
+						<CardDescription>
+							Select which organization you want to work with
+						</CardDescription>
+					</CardHeader>
+					<CardContent>
+						<div className="grid gap-2">
+							{organizations.map((org) => {
+								const isActive = org.id === activeOrg?.id;
+								return (
+									<button
+										key={org.id}
+										onClick={() => handleSwitchOrganization(org.id)}
+										disabled={isSwitching || isActive}
+										className={`flex items-center justify-between rounded-lg border p-4 text-left transition-colors hover:bg-accent disabled:opacity-50 ${
+											isActive ? "border-primary bg-accent" : ""
+										}`}
+									>
+										<div className="flex-1">
+											<div className="flex items-center gap-2">
+												<p className="font-medium">{org.name}</p>
+												{isActive && (
+													<Badge variant="default" className="gap-1">
+														<IconCheck className="size-3" />
+														Active
+													</Badge>
+												)}
+											</div>
+											<p className="text-sm text-muted-foreground">
+												{org.slug}
+											</p>
+										</div>
+										{isSwitching && !isActive && (
+											<IconLoader2 className="size-4 animate-spin text-muted-foreground" />
+										)}
+									</button>
+								);
+							})}
+						</div>
+					</CardContent>
+				</Card>
+			)}
+
+			{/* Organization Settings */}
+			<Card>
+				<CardHeader>
+					<CardTitle>Organization Settings</CardTitle>
+					<CardDescription>
+						Update your organization details and workspace settings
+					</CardDescription>
+				</CardHeader>
+				<CardContent>
 				<Form {...form}>
 					<form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
 						<FormField
@@ -134,6 +210,7 @@ export function OrganizationTab() {
 				</Form>
 			</CardContent>
 		</Card>
+		</div>
 	);
 }
 

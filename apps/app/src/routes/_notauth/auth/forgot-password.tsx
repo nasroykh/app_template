@@ -18,9 +18,8 @@ import {
 	FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import { orpc } from "@/lib/orpc";
+import { authClient } from "@/lib/auth";
 import { toast } from "sonner";
-import { useMutation } from "@tanstack/react-query";
 
 export const Route = createFileRoute("/_notauth/auth/forgot-password")({
 	component: RouteComponent,
@@ -54,6 +53,7 @@ function RouteComponent() {
 	const [currentStep, setCurrentStep] = useState(1);
 	const [userEmail, setUserEmail] = useState("");
 	const [otp, setOtp] = useState("");
+	const [isLoading, setIsLoading] = useState(false);
 
 	const emailForm = useForm<EmailFormValues>({
 		resolver: zodResolver(emailSchema),
@@ -70,75 +70,77 @@ function RouteComponent() {
 		defaultValues: { password: "", confirmPassword: "" },
 	});
 
-	// Mutations
-	const forgetPasswordMutation = useMutation(
-		orpc.auth.forgetPassword.mutationOptions({
-			onSuccess: () => {
-				toast.success("Reset email sent");
-				setUserEmail(emailForm.getValues("email"));
-				setCurrentStep(2);
-			},
-			onError: (error: any) => {
+	const onEmailSubmit = async (values: EmailFormValues) => {
+		setIsLoading(true);
+		try {
+			const { error } = await authClient.emailOtp.sendVerificationOtp({
+				email: values.email,
+				type: "forget-password",
+			});
+
+			if (error) {
 				toast.error(error.message || "Failed to send reset email");
-			},
-		}),
-	);
+				return;
+			}
 
-	const checkOtpMutation = useMutation(
-		orpc.auth.checkVerificationOtp.mutationOptions({
-			onSuccess: () => {
-				toast.success("Verification successful");
-				setOtp(verificationForm.getValues("code"));
-				setCurrentStep(3);
-			},
-			onError: (error: any) => {
-				toast.error(error.message || "Invalid verification code");
-			},
-		}),
-	);
+			toast.success("Reset email sent");
+			setUserEmail(values.email);
+			setCurrentStep(2);
+		} catch (err: any) {
+			toast.error(err.message || "An unexpected error occurred");
+		} finally {
+			setIsLoading(false);
+		}
+	};
 
-	const resetPasswordMutation = useMutation(
-		orpc.auth.resetPassword.mutationOptions({
-			onSuccess: () => {
-				toast.success("Password reset successful");
-				setCurrentStep(4);
-			},
-			onError: (error: any) => {
+	const onVerificationSubmit = async (values: VerificationFormValues) => {
+		// Better Auth doesn't have a standalone 'check otp' for forget-password.
+		// We just store the OTP and proceed to the next step.
+		setOtp(values.code);
+		setCurrentStep(3);
+	};
+
+	const onResetPasswordSubmit = async (values: ResetPasswordFormValues) => {
+		setIsLoading(true);
+		try {
+			const { error } = await authClient.emailOtp.resetPassword({
+				email: userEmail,
+				otp,
+				password: values.password,
+			});
+
+			if (error) {
 				toast.error(error.message || "Password reset failed");
-			},
-		}),
-	);
+				return;
+			}
 
-	const resendOtpMutation = useMutation(
-		orpc.auth.forgetPassword.mutationOptions({
-			onSuccess: () => {
-				toast.success("Reset code resent");
-			},
-			onError: (error: any) => {
+			toast.success("Password reset successful");
+			setCurrentStep(4);
+		} catch (err: any) {
+			toast.error(err.message || "Password reset failed");
+		} finally {
+			setIsLoading(false);
+		}
+	};
+
+	const handleResendOTP = async () => {
+		if (!userEmail || isLoading) return;
+		setIsLoading(true);
+		try {
+			const { error } = await authClient.emailOtp.sendVerificationOtp({
+				email: userEmail,
+				type: "forget-password",
+			});
+			if (error) {
 				toast.error(error.message || "Failed to resend code");
-			},
-		}),
-	);
-
-	const onEmailSubmit = (data: EmailFormValues) => {
-		forgetPasswordMutation.mutate({ email: data.email });
-	};
-
-	const onVerificationSubmit = (data: VerificationFormValues) => {
-		checkOtpMutation.mutate({ email: userEmail, otp: data.code });
-	};
-
-	const onResetPasswordSubmit = (data: ResetPasswordFormValues) => {
-		resetPasswordMutation.mutate({
-			email: userEmail,
-			otp,
-			newPassword: data.password,
-		});
-	};
-
-	const handleResendOTP = () => {
-		if (!userEmail || resendOtpMutation.isPending) return;
-		resendOtpMutation.mutate({ email: userEmail });
+			} else {
+				toast.success("Reset code resent");
+			}
+		} catch (err: any) {
+			toast.error(err.message || "Failed to resend code");
+		} finally {
+			setIsLoading(false);
+		}
 	};
 
 	const handleReset = () => {
@@ -148,11 +150,6 @@ function RouteComponent() {
 		resetPasswordForm.reset();
 		setUserEmail("");
 	};
-
-	const isLoading =
-		forgetPasswordMutation.isPending ||
-		checkOtpMutation.isPending ||
-		resetPasswordMutation.isPending;
 
 	return (
 		<AuthLayout
@@ -169,7 +166,7 @@ function RouteComponent() {
 					<Form {...emailForm}>
 						<FormStep
 							onSubmit={emailForm.handleSubmit(onEmailSubmit)}
-							isLoading={forgetPasswordMutation.isPending}
+							isLoading={isLoading}
 							submitText="Send reset link"
 							footerContent={
 								<>
@@ -194,7 +191,7 @@ function RouteComponent() {
 												placeholder="name@example.com"
 												type="email"
 												{...field}
-												disabled={forgetPasswordMutation.isPending}
+												disabled={isLoading}
 											/>
 										</FormControl>
 										<FormMessage />
@@ -222,10 +219,10 @@ function RouteComponent() {
 									<button
 										type="button"
 										onClick={handleResendOTP}
-										disabled={isLoading || resendOtpMutation.isPending}
+										disabled={isLoading}
 										className="text-primary hover:underline font-medium disabled:opacity-50"
 									>
-										{resendOtpMutation.isPending ? "Sending..." : "Resend"}
+										{isLoading ? "Wait..." : "Resend"}
 									</button>
 								</>
 							}

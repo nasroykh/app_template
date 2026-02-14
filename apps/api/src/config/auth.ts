@@ -1,9 +1,13 @@
 import { betterAuth } from "better-auth";
 import { drizzleAdapter } from "better-auth/adapters/drizzle";
-import { admin, emailOTP, organization, bearer } from "better-auth/plugins";
+import { admin } from "better-auth/plugins/admin";
+import { emailOTP } from "better-auth/plugins/email-otp";
+import { organization } from "better-auth/plugins/organization";
+import { bearer } from "better-auth/plugins/bearer";
 
 import { db } from "@repo/db";
 import * as schema from "@repo/db/schema";
+import { eq } from "@repo/db/drizzle-orm";
 import { sendOTPEmail, sendInvitationEmail } from "../services/email.service";
 import { env } from "./env";
 
@@ -45,4 +49,47 @@ export const auth = betterAuth({
 		},
 	},
 	trustedOrigins: [env.APP_URL],
+	databaseHooks: {
+		user: {
+			create: {
+				after: async (user) => {
+					console.log(`User created: ${user.email}`);
+
+					// Check if user already has an organization (e.g., accepted an invitation)
+					const existingMemberships = await db
+						.select()
+						.from(schema.member)
+						.where(eq(schema.member.userId, user.id))
+						.limit(1);
+
+					// Only create a default organization if user doesn't belong to any
+					if (existingMemberships.length === 0) {
+						// Generate organization name from user's name or email
+						const orgName = user.name || user.email.split("@")[0];
+						const baseSlug = orgName
+							.toLowerCase()
+							.replace(/[^a-z0-9]+/g, "-")
+							.replace(/^-|-$/g, "");
+						const slug = `${baseSlug}-${Date.now()}`;
+
+						// Create organization using Better Auth API
+						// User will automatically become owner
+						await auth.api.createOrganization({
+							body: {
+								name: orgName,
+								slug,
+								userId: user.id,
+							},
+						});
+
+						console.log(`Created default organization for user: ${user.email}`);
+					}
+				},
+			},
+		},
+	},
 });
+
+export type Auth = typeof auth;
+export type Session = typeof auth.$Infer.Session;
+export type User = typeof auth.$Infer.Session.user;

@@ -10,8 +10,8 @@ This is a high-performance full-stack web application starter kit built with a m
   - **State Management:**
     - Server state: TanStack Query (via @orpc/tanstack-query)
     - Global client state: Jotai
-  - **API Client:** ORPC Client (End-to-end type safety)
-  - **Auth:** Better Auth
+  - **API Client:** ORPC Client (End-to-end type safety for business logic)
+  - **Auth:** Better Auth (`authClient` with emailOTP, organization, admin plugins)
   - **Forms:** React Hook Form, Zod
   - **UI/Styling:** Tailwind CSS 4, Base UI Primitives, Tabler Icons
   - **Components:** Sonner (Toast), Vaul (Drawer/Bottom Sheet), CMDK, Recharts, Embla Carousel
@@ -23,7 +23,7 @@ This is a high-performance full-stack web application starter kit built with a m
   - **Language:** TypeScript
   - **API:** ORPC (Type-safe), OpenAPI (Scalar/Swagger) support
   - **Database:** Drizzle ORM
-  - **Auth:** Better Auth (with Drizzle adapter)
+  - **Auth:** Better Auth (with Drizzle adapter, Bearer plugin)
   - **Email:** Nodemailer
 
 - **Database (`packages/db`):**
@@ -78,9 +78,15 @@ This is a high-performance full-stack web application starter kit built with a m
   ```bash
   pnpm db:migrate
   ```
-- **Push schema changes (dev):**
   ```bash
   pnpm db:push
+  ```
+
+### Skill Management (AI Agents)
+
+- **Symlink skills:**
+  ```bash
+  pnpm skills:symlink:all
   ```
 
 ### Production
@@ -97,7 +103,7 @@ This is a high-performance full-stack web application starter kit built with a m
 - **Type Safety**: End-to-end type safety is maintained via **ORPC**, connecting Hono routers directly to React hooks.
   - Backend routes are defined in `apps/api/src/router/routes` using `publicProcedure`, `authProcedure`, or `adminProcedure`.
   - Frontend consumes these via the `orpc` utility in `apps/app/src/lib/orpc.ts`.
-- **Authentication**: Managed by **Better Auth**, which handles registration, login, sessions, and roles (admin/user).
+- **Authentication**: Managed natively by **Better Auth** — mounted as a Hono plugin at `/auth/*` on the backend, consumed via `authClient` on the frontend. Auth types (`User`, `Session`) are exported from the backend and shared with the frontend. Supports email OTP, organizations, and admin roles. Auth flows do NOT go through oRPC.
 - **Styling**: Uses **Tailwind CSS 4** for a modern utility-first approach with **Base UI** for accessible primitives.
 - **Validation**: Shared **Zod** schemas between frontend and backend for input validation and data integrity.
-- **API Design**: Routes follow a structured pattern with `PREFIX` (e.g., `/api/v1`) and categorization (e.g., `/admin`, `/auth`).
+- **API Design**: Business routes follow a structured pattern with `PREFIX` (e.g., `/api/v1`) via oRPC. Auth routes are served separately by Better Auth at `/api/v1/auth/*`.

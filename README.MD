@@ -30,11 +30,11 @@ This project is a monorepo using **pnpm workspaces** + **Turborepo**, featuring 
     ```
 
 2.  **Environment Setup:**
-
     - Configure `.env` files in `apps/api` and `packages/db` based on their `.env.example` templates.
     - Configure Database, Auth, and SMTP details.
 
 3.  **Generate Auth Schema (if needed):**
+
     ```bash
     pnpm auth:generate
     ```
@@ -43,6 +43,7 @@ This project is a monorepo using **pnpm workspaces** + **Turborepo**, featuring 
     ```bash
     pnpm dev
     ```
+
     - **Frontend**: `http://localhost:33460`
     - **Backend**: `http://localhost:33450`
     - **Swagger UI**: `http://localhost:33450/docs`
@@ -50,11 +51,11 @@ This project is a monorepo using **pnpm workspaces** + **Turborepo**, featuring 
 ## Features
 
 - **End-to-End Type Safety**: Shared types between backend and frontend via ORPC. Backend route types flow to frontend via `AppRouter` type export → ORPC client → TanStack Query hooks.
-- **Robust Authentication**: Powered by Better Auth with support for multiple providers, sessions, and roles (admin/user).
+- **Robust Authentication**: Powered by Better Auth with native Hono integration, email OTP verification, organization support, and admin roles. Supports both **cookie-based sessions** and **Bearer tokens**. Auth endpoints served directly at `/auth/*`, with typed `authClient` on the frontend.
 - **Modern Styling**: Utility-first styling with Tailwind CSS 4, accessible components from Base UI, and shadcn-style UI primitives.
 - **Type-Safe Routing**: File-based routing with TanStack Router, including protected (`_auth`) and guest-only (`_notauth`) layout routes.
 - **Database Management**: Easy migrations and schema management with Drizzle ORM and Drizzle Kit.
-- **State Management**: Server state via TanStack Query/ORPC, global client state via Jotai.
+- **State Management**: Server state via TanStack Query/ORPC, auth session state via Better Auth's `useSession()`, other client state via Jotai.
 
 ## Structure
 
@@ -83,6 +84,9 @@ pnpm auth:generate    # Regenerate Better Auth schema into packages/db
 pnpm --filter api dev
 pnpm --filter app dev
 pnpm --filter @repo/db db:studio   # Open Drizzle Studio
+
+# Skills (for AI agents)
+pnpm skills:symlink:all   # Symlink skills to .claude, .cursor, and .agent directories
 ```
 
 ## Development Conventions

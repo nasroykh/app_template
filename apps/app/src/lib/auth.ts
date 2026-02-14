@@ -6,7 +6,12 @@ import {
 } from "better-auth/client/plugins";
 
 export const authClient = createAuthClient({
-	/** The base URL of the server (optional if you're using the same domain) */
-	baseURL: `${import.meta.env.VITE_API_URL}/auth`,
+	/** The base URL of the server */
+	baseURL: `${import.meta.env.VITE_API_URL}/auth`, // Points to /api/v1, Better Auth appends /auth
 	plugins: [adminClient(), organizationClient(), emailOTPClient()],
 });
+
+export type User = typeof authClient.$Infer.Session.user;
+export type Session = typeof authClient.$Infer.Session;
+
+export const { useSession, signIn, signUp, signOut, getSession } = authClient;

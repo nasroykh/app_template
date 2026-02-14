@@ -31,7 +31,7 @@ import {
 import { authClient } from "@/lib/auth";
 import { orpc } from "@/lib/orpc";
 import { toast } from "sonner";
-import { useMutation, useQuery } from "@tanstack/react-query";
+import { useMutation } from "@tanstack/react-query";
 
 export const Route = createFileRoute("/_auth/invite/$inviteId")({
 	component: InvitePage,
@@ -87,9 +87,8 @@ function InvitePage() {
 		defaultValues: { password: "" },
 	});
 
-	// Mutations
-	const signUpMutation = useMutation(orpc.auth.signUp.mutationOptions({}));
-	const signInMutation = useMutation(orpc.auth.signIn.mutationOptions({}));
+	// Auth state
+	const [isAuthLoading, setIsAuthLoading] = useState(false);
 	const acceptMutation = useMutation(
 		orpc.organization.acceptInvitation.mutationOptions({}),
 	);
@@ -155,14 +154,20 @@ function InvitePage() {
 
 	const onSignupSubmit = async (data: SignupFormValues) => {
 		if (!invitation) return;
+		setIsAuthLoading(true);
 
 		try {
 			// 1. Create account with the invited email
-			await signUpMutation.mutateAsync({
+			const { error } = await authClient.signUp.email({
 				email: invitation.email,
 				name: data.name,
 				password: data.password,
 			});
+
+			if (error) {
+				toast.error(error.message || "Signup failed");
+				return;
+			}
 
 			// 2. Accept the invitation
 			await acceptInvitation();
@@ -171,18 +176,26 @@ function InvitePage() {
 			toast.error(
 				error instanceof Error ? error.message : "Failed to join organization",
 			);
+		} finally {
+			setIsAuthLoading(false);
 		}
 	};
 
 	const onLoginSubmit = async (data: LoginFormValues) => {
 		if (!invitation) return;
+		setIsAuthLoading(true);
 
 		try {
 			// 1. Login with the invited email
-			await signInMutation.mutateAsync({
+			const { error } = await authClient.signIn.email({
 				email: invitation.email,
 				password: data.password,
 			});
+
+			if (error) {
+				toast.error(error.message || "Login failed");
+				return;
+			}
 
 			// 2. Accept the invitation
 			await acceptInvitation();
@@ -191,6 +204,8 @@ function InvitePage() {
 			toast.error(
 				error instanceof Error ? error.message : "Failed to join organization",
 			);
+		} finally {
+			setIsAuthLoading(false);
 		}
 	};
 
@@ -217,8 +232,7 @@ function InvitePage() {
 	};
 
 	const isSubmitting =
-		signUpMutation.isPending ||
-		signInMutation.isPending ||
+		isAuthLoading ||
 		acceptMutation.isPending ||
 		rejectMutation.isPending;
 
@@ -470,7 +484,7 @@ function InvitePage() {
 										className="w-full"
 										disabled={isSubmitting}
 									>
-										{signUpMutation.isPending ? (
+										{isAuthLoading ? (
 											<>
 												<IconLoader2 className="mr-2 size-4 animate-spin" />
 												Creating account...
@@ -512,7 +526,7 @@ function InvitePage() {
 										className="w-full"
 										disabled={isSubmitting}
 									>
-										{signInMutation.isPending ? (
+										{isAuthLoading ? (
 											<>
 												<IconLoader2 className="mr-2 size-4 animate-spin" />
 												Signing in...

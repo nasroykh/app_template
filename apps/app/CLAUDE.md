@@ -10,6 +10,21 @@ pnpm build        # TypeScript check + Vite build
 pnpm lint         # ESLint
 ```
 
+### Docker Commands
+
+```bash
+# Production deployment (Nginx)
+docker-compose up --build -d
+
+# View logs
+docker-compose logs -f app
+
+# Stop services
+docker-compose down
+```
+
+**Note:** Use `pnpm dev` for local development. Docker is for production only.
+
 ## Architecture
 
 React 19 + Vite + TanStack Router (file-based) + ORPC client + Tailwind CSS 4.
@@ -27,6 +42,7 @@ React 19 + Vite + TanStack Router (file-based) + ORPC client + Tailwind CSS 4.
 ### Adding a Page
 
 Create a file in `src/routes/` following TanStack Router conventions:
+
 - `_auth/dashboard.tsx` → protected route at `/dashboard`
 - `_notauth/auth/login.tsx` → guest-only route at `/auth/login`
 - `_auth/users/$userId.tsx` → dynamic param route

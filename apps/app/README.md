@@ -39,6 +39,33 @@ pnpm lint         # ESLint
 
 The app will be available at `http://localhost:33460`.
 
+### Docker
+
+The app is containerized for production using Nginx. **It is highly recommended to use the `Makefile` at the project root** for all Docker operations.
+
+**Production Deployment (from root):**
+
+```bash
+make up          # Build and start
+make logs-app    # View frontend logs
+```
+
+**Manual Operations (from root):**
+
+```bash
+make shell-app   # Access container terminal
+make down        # Stop services
+```
+
+Alternatively, using Docker Compose directly:
+
+```bash
+docker-compose up --build -d
+docker-compose logs -f app
+```
+
+**Note:** For local development, use `pnpm dev` directly on your host machine. Docker is configured for production deployments only.
+
 ## Architecture
 
 - `src/routes/`: File-based routing (TanStack Router). Route tree auto-generated in `routeTree.gen.ts`.

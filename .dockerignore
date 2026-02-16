@@ -1,0 +1,61 @@
+# Dependencies
+node_modules
+**/node_modules
+.pnpm-store
+
+# Build outputs
+dist
+**/dist
+.turbo
+**/.turbo
+build
+**/build
+
+# Development files
+.git
+.gitignore
+**/.env
+**/.env.*
+!**/.env.example
+*.log
+npm-debug.log*
+pnpm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# IDE
+.vscode
+.idea
+*.swp
+*.swo
+*~
+.DS_Store
+
+# Testing
+coverage
+**/.nyc_output
+**/__tests__
+**/*.test.ts
+**/*.test.tsx
+**/*.spec.ts
+**/*.spec.tsx
+
+# Documentation
+*.md
+!README.MD
+docs
+**/.claude
+**/.cursor
+**/.agent
+.agents
+
+# CI/CD
+.github
+.gitlab-ci.yml
+.travis.yml
+
+# Misc
+*.zip
+*.tar.gz
+tmp
+temp

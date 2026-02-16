@@ -1,0 +1,27 @@
+#!/bin/sh
+set -e
+
+echo "🚀 Starting API container..."
+
+# Wait for PostgreSQL to be ready
+echo "⏳ Waiting for PostgreSQL to be ready..."
+until pg_isready -h "$DB_HOST" -p "$DB_PORT" -U "$DB_USER" 2>/dev/null; do
+  echo "PostgreSQL is unavailable - sleeping"
+  sleep 2
+done
+
+echo "✅ PostgreSQL is ready!"
+
+# Run migrations automatically in production
+if [ "$NODE_ENV" = "production" ]; then
+  echo "🔄 Running database migrations..."
+  cd /app && pnpm --filter @repo/db db:migrate || {
+    echo "❌ Migration failed!"
+    exit 1
+  }
+  echo "✅ Migrations completed successfully!"
+fi
+
+# Start the application
+echo "🎯 Starting application..."
+exec node dist/index.js

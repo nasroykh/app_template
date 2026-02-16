@@ -19,9 +19,12 @@ This project is a monorepo using **pnpm workspaces** + **Turborepo**, featuring 
 
 - **Node.js**: >= 18
 - **pnpm**: >= 10.0.0
-- **Docker**: (Optional) For running local PostgreSQL/Redis
+- **Docker** (Optional): For containerized deployment
+- **Docker Compose** (Optional): For orchestrating multi-container setup
 
 ### Installation
+
+#### Option 1: Local Development (pnpm)
 
 1.  **Clone and Install:**
 
@@ -40,13 +43,14 @@ This project is a monorepo using **pnpm workspaces** + **Turborepo**, featuring 
     ```
 
 4.  **Run Development Mode:**
+
     ```bash
     pnpm dev
     ```
 
     - **Frontend**: `http://localhost:33460`
     - **Backend**: `http://localhost:33450`
-    - **Swagger UI**: `http://localhost:33450/docs`
+    - **API Documentation**: `http://localhost:33450/docs`
 
 ## Features
 
@@ -56,6 +60,7 @@ This project is a monorepo using **pnpm workspaces** + **Turborepo**, featuring 
 - **Type-Safe Routing**: File-based routing with TanStack Router, including protected (`_auth`) and guest-only (`_notauth`) layout routes.
 - **Database Management**: Easy migrations and schema management with Drizzle ORM and Drizzle Kit.
 - **State Management**: Server state via TanStack Query/ORPC, auth session state via Better Auth's `useSession()`, other client state via Jotai.
+- **Docker Ready**: Production-ready containerization with multi-stage builds, automatic database migrations, health checks, and optimized images. Use `pnpm dev` for local development.
 
 ## Structure
 
@@ -66,6 +71,8 @@ This project is a monorepo using **pnpm workspaces** + **Turborepo**, featuring 
 - `packages/eslint-config`: Shared ESLint configuration.
 
 ## Scripts
+
+### Local Development (pnpm)
 
 ```bash
 pnpm install          # Install all dependencies
@@ -89,6 +96,30 @@ pnpm --filter @repo/db db:studio   # Open Drizzle Studio
 pnpm skills:symlink:all   # Symlink skills to .claude, .cursor, and .agent directories
 ```
 
+### Docker Commands (Production Only)
+
+The project includes a **Makefile** for easy Docker management.
+
+```bash
+# Production setup and deployment
+make env-setup   # Copy .env.docker to .env
+make validate    # Pre-flight check
+make build       # Build production images
+make up          # Start containers in detached mode
+
+# Monitoring
+make logs-api    # Watch migrations and API logs
+make stats       # View container resource usage
+
+# Maintenance
+make migrate     # Run migrations manually
+make shell-api   # Access API container terminal
+make down        # Stop services
+make clean-all   # Deep cleanup (removes volumes)
+```
+
+**Note:** For local development, use `pnpm dev` directly. Docker is configured for production deployments only.
+
 ## Development Conventions
 
 - **Adding an API route**: Create file in `apps/api/src/router/routes/`, use `publicProcedure`/`authProcedure`/`adminProcedure` from `middleware.ts`, add to router in `router/index.ts`.
@@ -97,6 +128,32 @@ pnpm skills:symlink:all   # Symlink skills to .claude, .cursor, and .agent direc
 - **Validation**: Shared Zod schemas between frontend and backend for input validation and data integrity.
 - **API Design**: Routes follow a structured pattern with `PREFIX` (e.g., `/api/v1`) and categorization.
 
+## Docker Deployment
+
+This project includes production-ready Docker containerization with:
+
+- **Multi-stage Dockerfiles** for optimized production images
+- **Docker Compose** for orchestrating all services (PostgreSQL, API, Frontend)
+- **Automatic database migrations** on container startup
+- **Health checks** for all services
+- **Volume persistence** for PostgreSQL data
+- **Optimized images** (~150-200MB for API, ~50-80MB for frontend)
+
+**Quick Start:**
+
+```bash
+make env-setup   # 1. Setup environment
+make up          # 2. Build and start (production)
+make logs-api    # 3. Monitor migrations
+```
+
+**Documentation:**
+
+- [DOCKER.md](./DOCKER.md) - **Primary Docker Guide**
+- [docker/README.md](./docker/README.md) - Advanced configuration (technical)
+
+**Note:** For local development, use `pnpm dev` directly on your host machine. Docker is configured for production deployments only.
+
 ---
 
-For more detailed information, refer to [GEMINI.md](./GEMINI.md) and [CLAUDE.md](./CLAUDE.md).
+For more detailed information, refer to [GEMINI.md](./GEMINI.md), [CLAUDE.md](./CLAUDE.md), and [LLMS.md](./LLMS.md).

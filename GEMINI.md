@@ -38,7 +38,7 @@ This is a high-performance full-stack web application starter kit built with a m
 
 - **Node.js**: >= 18
 - **pnpm**: >= 10.0.0
-- **Docker**: (Optional) For running local PostgreSQL/Redis
+- **Docker**: (Optional) For running local PostgreSQL
 
 ### Development
 

@@ -10,6 +10,24 @@ pnpm build        # Compile TypeScript to dist/
 pnpm start        # Run production build
 ```
 
+### Docker Commands
+
+```bash
+# Production deployment
+docker-compose up --build -d
+
+# Migrations run automatically on startup
+docker-compose logs -f api
+
+# Manual migration (if needed)
+docker-compose exec api pnpm --filter @repo/db db:migrate
+
+# Stop services
+docker-compose down
+```
+
+**Note:** Use `pnpm dev` for local development. Docker is for production only.
+
 ## Architecture
 
 Hono HTTP server with ORPC for type-safe RPC and Better Auth for authentication.

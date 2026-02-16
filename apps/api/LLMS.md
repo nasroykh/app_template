@@ -65,3 +65,43 @@
 
 - Defined in `.env` (gitignored) and `src/config/env.ts` (validation).
 - To add a new var: Update `.env.example`, add to `.env`, and update Zod schema in `src/config/env.ts`.
+
+## Docker Deployment
+
+This API service is containerized for production deployment with automatic migration support:
+
+**Production Deployment:**
+
+```bash
+# From project root
+docker-compose up --build -d
+
+# Migrations run automatically on container startup
+# Entrypoint script: apps/api/docker-entrypoint.sh
+```
+
+**Features:**
+
+- ✅ Automatic database migrations on production startup
+- ✅ Health checks at `/api/v1/health`
+- ✅ Multi-stage Dockerfile for optimized images (~150-200MB)
+- ✅ PostgreSQL client included for `pg_isready`
+- ✅ Non-root user execution for security
+
+**Manual Operations:**
+
+```bash
+# View logs
+docker-compose logs -f api
+
+# Run migrations manually
+docker-compose exec api pnpm --filter @repo/db db:migrate
+
+# Access container shell
+docker-compose exec api sh
+
+# Stop services
+docker-compose down
+```
+
+**Note:** For local development, use `pnpm dev` directly on your host machine. Docker is configured for production deployments only.

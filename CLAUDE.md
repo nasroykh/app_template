@@ -4,6 +4,8 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Commands
 
+### Local Development
+
 ```bash
 pnpm install          # Install all dependencies
 pnpm dev              # Start all services (frontend :33460, backend :33450)
@@ -19,12 +21,35 @@ pnpm auth:generate    # Regenerate Better Auth schema into packages/db
 # Run a single app
 pnpm --filter api dev
 pnpm --filter app dev
-pnpm --filter app dev
 pnpm --filter @repo/db db:studio   # Open Drizzle Studio
 
 # Skills (for AI agents)
 pnpm skills:symlink:all   # Symlink skills to .claude, .cursor, and .agent directories
 ```
+
+### Docker Commands (Production Only)
+
+```bash
+# Setup and Deployment
+make env-setup        # Copy .env.docker to .env
+make validate         # Pre-flight check
+make build            # Build production images
+make up               # Start containers in detached mode
+
+# Monitoring
+make logs-api         # Watch migrations and API logs
+make logs             # View all logs
+make stats            # View container resource usage
+
+# Maintenance
+make migrate          # Run migrations manually
+make migrate-gen      # Generate new migrations
+make shell-api        # Access API container terminal
+make down             # Stop services
+make clean-all        # Full cleanup (removes volumes)
+```
+
+**Note:** Use `pnpm dev` for local development. Docker is for production only.
 
 ## Architecture
 
@@ -68,3 +93,26 @@ Monorepo using **pnpm workspaces** + **Turborepo**.
 - **DB schema changes**: Edit models in `packages/db/src/models/`, run `pnpm db:generate` then `pnpm db:migrate`
 - **Type flow**: Backend route types flow to frontend via `AppRouter` type export → ORPC client → TanStack Query hooks
 - **Zod 4** is used for validation across both frontend and backend
+
+## Docker Deployment
+
+The project is containerized for production deployment:
+
+- **Multi-stage Dockerfiles** in `apps/api/Dockerfile` and `apps/app/Dockerfile` (3 stages: deps, build, production)
+- **Docker Compose** orchestration with PostgreSQL service
+- **Automatic database migrations** on API container startup
+- **Production mode** with optimized Alpine-based images
+- **Health checks** on all services for reliability
+- **Helper scripts** in `docker/scripts/` for common operations
+
+**Health Endpoints:**
+
+- API: `GET /api/v1/health` - Returns status, timestamp, uptime, environment
+- Frontend: `GET /health` - Returns healthy status
+
+**Documentation:**
+
+- [DOCKER.md](./DOCKER.md) - **Primary Docker Guide**
+- [docker/README.md](./docker/README.md) - Advanced configuration (technical)
+
+**Note:** For local development, use `pnpm dev` directly. Docker is for production only.

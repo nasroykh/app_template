@@ -1,64 +1,79 @@
-# App Documentation for LLMs
+# LLMS.md for Frontend App
 
-**Context**: `apps/app`
-**Role**: Frontend Web Application
-**Stack**: React 19, Vite, TanStack Router, TanStack Query, Tailwind CSS 4
+**Context**: `apps/app`  
+**Role**: Frontend Web Application  
+**Stack**: React 19, Vite, TanStack Router, TanStack Query, ORPC Client, Tailwind CSS 4, Base UI
 
-## Architecture
+## Quick Overview
 
-- **Routing**: File-based routing via **TanStack Router** (`src/routes`).
-- **Data Fetching**: **ORPC** client w/ TanStack Query integration.
-- **State**:
-  - **Server**: TanStack Query (via ORPC).
-  - **Auth**: Better Auth (`useSession`).
-  - **Client**: Jotai atoms.
-- **Styling**: Tailwind CSS 4, Base UI, `shadcn` components.
+This is a modern React frontend with file-based routing (TanStack Router), end-to-end type-safe API communication (via ORPC), and a utility-first styling approach (Tailwind CSS 4).
 
-## Directory Structure
+## Key Patterns
 
-- `src/routes/`: Route definitions.
-  - `__root.tsx`: Root layout.
-  - `_auth.tsx`: Layout for authenticated routes (checks session).
-  - `_notauth.tsx`: Layout for guest routes (login/register).
-- `src/components/`:
-  - `ui/`: Reusable UI components (buttons, inputs).
-  - `audit/`, `common/`: Feature-specific components.
-- `src/lib/`:
-  - `orpc.ts`: ORPC client setup.
-  - `auth.ts`: Better Auth client setup.
-  - `utils.ts`: Helper functions (cn, etc.).
-- `src/hooks/`: Custom React hooks.
+### 1. Routing (TanStack Router)
 
-## Development Workflows
+- Routes are defined in `src/routes/` using file-based conventions.
+- **Protected routes**: Go under `_auth/` (e.g., `_auth/dashboard.tsx` → `/dashboard`).
+- **Public routes**: Go under `_notauth/` (e.g., `_notauth/auth/login.tsx` → `/auth/login`).
+- **Dynamic params**: Use `$paramName.tsx` (e.g., `_auth/users/$userId.tsx` → `/users/:userId`).
+- Route tree is auto-generated in `src/routes/routeTree.gen.ts`.
 
-### 1. Adding a New Page
+### 2. Type-Safe API Calls (ORPC + TanStack Query)
 
-1.  **Create File**: `src/routes/_auth/my-page.tsx` (for protected page).
-2.  **Export Component**:
+The `src/lib/orpc.ts` client imports the `AppRouter` type from the backend and exposes TanStack Query utilities.
 
-    ```tsx
-    import { createFileRoute } from "@tanstack/react-router";
-
-    export const Route = createFileRoute("/_auth/my-page")({
-    	component: MyPage,
-    });
-
-    function MyPage() {
-    	return <div>Hello World</div>;
-    }
-    ```
-
-3.  **Link**: Use `<Link to="/my-page" />` from `@tanstack/react-router`.
-
-### 2. Consuming API (ORPC)
+**Query:**
 
 ```tsx
 import { orpc } from "@/lib/orpc";
 
 function MyComponent() {
-	const { data } = orpc.myFeature.doSomething.useQuery({
+	const { data, isLoading, error } = orpc.myFeature.doSomething.useQuery({
 		input: { key: "value" },
 	});
+
+	// data is fully typed based on the backend output schema
+}
+```
+
+**Mutation:**
+
+```tsx
+import { orpc } from "@/lib/orpc";
+
+function MyComponent() {
+	const { mutate, isPending } = orpc.myFeature.updateSomething.useMutation();
+
+	const handleSubmit = (values) => {
+		mutate({ input: values });
+	};
+
+	return <button onClick={handleSubmit}>Submit</button>;
+}
+```
+
+**Example with query options:**
+
+```tsx
+import { orpc } from "@/lib/orpc";
+import { useSuspenseQuery } from "@tanstack/react-query";
+
+export const Route = createFileRoute("/_auth/dashboard")({
+	loader: ({ context }) =>
+		context.queryClient.ensureQueryData(
+			orpc.myFeature.doSomething.queryOptions({
+				input: { key: "value" },
+			}),
+		),
+	component: DashboardComponent,
+});
+
+function DashboardComponent() {
+	const { data } = useSuspenseQuery(
+		orpc.myFeature.doSomething.queryOptions({
+			input: { key: "value" },
+		}),
+	);
 
 	const { mutate } = orpc.myFeature.doSomething.useMutation();
 }
@@ -83,3 +98,46 @@ function UserProfile() {
 
 - Use utility classes directly: `className="flex flex-col gap-4 p-4"`.
 - Configuration is in `index.css` (CSS variables) and `vite.config.ts` (rarely needed).
+
+## Docker Deployment
+
+The frontend is containerized for production deployment:
+
+**Production Deployment:**
+
+```bash
+# From project root
+docker-compose up --build -d
+
+# Nginx serving optimized static build
+# Health check available at /health
+```
+
+**Features:**
+
+- ✅ Multi-stage Dockerfile (deps, build, production with Nginx)
+- ✅ Optimized Nginx configuration with gzip, caching, and security headers
+- ✅ TanStack Router support (serves index.html for all routes)
+- ✅ API proxy at `/api` to backend service
+- ✅ Health endpoint at `/health`
+- ✅ Non-root user execution
+
+**Container Details:**
+
+- Production: `~50-80MB` Alpine Nginx image
+- Port: `33460`
+
+**Manual Operations:**
+
+```bash
+# View logs
+docker-compose logs -f app
+
+# Rebuild image
+docker-compose build app
+
+# Stop services
+docker-compose down
+```
+
+**Note:** For local development, use `pnpm dev` directly on your host machine. Docker is configured for production deployments only.

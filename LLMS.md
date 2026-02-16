@@ -101,6 +101,8 @@ This is a high-performance **Turbo** monorepo using **pnpm workspaces**.
 
 ## 4. Key Commands
 
+### Local Development
+
 | Action             | Command                               |
 | :----------------- | :------------------------------------ |
 | **Start Dev**      | `pnpm dev` (Runs all apps)            |
@@ -111,8 +113,71 @@ This is a high-performance **Turbo** monorepo using **pnpm workspaces**.
 | **Lint**           | `pnpm lint`                           |
 | **Skills**         | `pnpm skills:symlink:all`             |
 
-## 5. Deployment
+### Docker Commands (Production Only)
+
+| Action                     | Command          |
+| :------------------------- | :--------------- |
+| **Production Ready Build** | `make build`     |
+| **Production Deploy**      | `make up`        |
+| **Pre-flight Check**       | `make validate`  |
+| **View All Logs**          | `make logs`      |
+| **Watch API/Migrations**   | `make logs-api`  |
+| **DB Migrate (Manual)**    | `make migrate`   |
+| **Stop Services**          | `make down`      |
+| **Deep Cleanup**           | `make clean-all` |
+| **Resource Stats**         | `make stats`     |
+
+**Note:** Use `pnpm dev` for local development. Docker is for production only.
+
+## 5. Docker & Deployment
+
+### Docker Setup
+
+The project includes production-ready containerization:
+
+**Architecture:**
+
+- **Multi-stage Dockerfiles** for API and Frontend (3 stages: deps, build, production)
+- **Docker Compose** orchestration with 3 services (PostgreSQL, API, Frontend)
+- **Automatic database migrations** on API container startup
+- **Production mode** with optimized Alpine-based images (~150-200MB API, ~50-80MB frontend)
+- **Health checks** for all services
+
+**Files:**
+
+- `apps/api/Dockerfile` - Backend container (3 stages)
+- `apps/api/docker-entrypoint.sh` - Automatic migration script
+- `apps/app/Dockerfile` - Frontend container (3 stages)
+- `docker-compose.yml` - Production orchestration
+- `Makefile` - Central command interface
+- `docker-validate.sh` - Pre-flight configuration validation
+- `DOCKER.md` - Primary deployment guide
+- `docker/README.md` - Technical/Advanced documentation
+
+**Quick Start:**
+
+```bash
+make env-setup   # 1. Setup environment
+make up          # 2. Build and start (production)
+make logs-api    # 3. Monitor migrations
+```
+
+**Health Endpoints:**
+
+- API: `GET /api/v1/health` → `{ status, timestamp, uptime, environment }`
+- Frontend: `GET /health` → `200 OK`
+
+**Note:** For local development, use `pnpm dev` directly. Docker is for production only.
+
+### Traditional Deployment
 
 - **Frontend**: Static build (`pnpm build`). Deploy to Vercel/Netlify/S3.
-- **Backend**: Node.js server (`pnpm build` -> `dist/index.js`). Deploy to VPS/Railway/Render.
+- **Backend**: Node.js server (`pnpm build` → `dist/index.js`). Deploy to VPS/Railway/Render.
 - **Database**: PostgreSQL database required.
+
+### Container Deployment
+
+- **Build Images**: `docker-compose build`
+- **Tag & Push**: Push to Docker registry
+- **Deploy**: Use Docker Compose on VPS or container orchestration (ECS, Cloud Run, etc.)
+- **See**: [DOCKER_SETUP.md](./DOCKER_SETUP.md) for detailed deployment guide

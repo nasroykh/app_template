@@ -35,6 +35,34 @@ pnpm build        # Compile TypeScript to dist/
 pnpm start        # Run production build
 ```
 
+### Docker
+
+The API is fully containerized for production. **It is highly recommended to use the `Makefile` at the project root** for all Docker operations.
+
+**Production Deployment (from root):**
+
+```bash
+make up          # Build and start
+make logs-api    # Watch migrations and API logs
+```
+
+**Manual Operations (from root):**
+
+```bash
+make migrate     # Run migrations manually
+make shell-api   # Access container terminal
+make down        # Stop services
+```
+
+Alternatively, using Docker Compose directly:
+
+```bash
+docker-compose up --build -d
+docker-compose logs -f api
+```
+
+**Note:** For local development, use `pnpm dev` directly on your host machine. Docker is configured for production deployments only.
+
 ## Architecture
 
 - `src/index.ts`: Entry point — initializes DB, registers plugins (CORS, ORPC, OpenAPI/Scalar, Auth), serves on `@hono/node-server`.

@@ -1,7 +1,7 @@
 # ============================================
 # Stage 1: Dependencies - Install all dependencies
 # ============================================
-FROM node:18-alpine AS deps
+FROM node:24-alpine AS deps
 
 # Install pnpm
 RUN apk add --no-cache libc6-compat
@@ -26,7 +26,7 @@ RUN --mount=type=cache,id=pnpm,target=/root/.local/share/pnpm/store \
 # ============================================
 # Stage 2: Build - Build the application
 # ============================================
-FROM node:18-alpine AS build
+FROM node:24-alpine AS build
 
 RUN npm install -g pnpm@10.0.0 turbo@2.5.4
 

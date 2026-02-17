@@ -27,7 +27,7 @@ This is a high-performance full-stack web application starter kit built with a m
   - **Email:** Nodemailer
 
 - **Database (`packages/db`):**
-  - **Engine:** PostgreSQL
+  - **Engine:** PostgreSQL 18
   - **ORM:** Drizzle ORM
   - **Tools:** Drizzle Kit (Migrations & Studio)
   - **Validation:** Zod (via drizzle-zod)
@@ -36,7 +36,7 @@ This is a high-performance full-stack web application starter kit built with a m
 
 ### Prerequisites
 
-- **Node.js**: >= 18
+- **Node.js**: >= 24
 - **pnpm**: >= 10.0.0
 - **Docker**: (Optional) For running local PostgreSQL
 

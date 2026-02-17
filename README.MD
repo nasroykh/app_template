@@ -17,7 +17,7 @@ This project is a monorepo using **pnpm workspaces** + **Turborepo**, featuring 
 
 ### Prerequisites
 
-- **Node.js**: >= 18
+- **Node.js**: >= 24
 - **pnpm**: >= 10.0.0
 - **Docker** (Optional): For containerized deployment
 - **Docker Compose** (Optional): For orchestrating multi-container setup

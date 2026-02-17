@@ -18,6 +18,7 @@ docker-compose -f docker-compose.yml -f docker-compose.dev.yml up --build
 ```
 
 **Services will be available at:**
+
 - Frontend: http://localhost:33460
 - Backend API: http://localhost:33450
 - API Docs: http://localhost:33450/docs
@@ -50,12 +51,14 @@ docker-compose down
 Both the API and frontend applications use optimized multi-stage Docker builds:
 
 **API Dockerfile Stages:**
+
 1. **deps** - Install all dependencies with pnpm
 2. **build** - Build shared packages and API
 3. **production** - Minimal runtime image with only production dependencies
 4. **development** - Development image with hot reload support
 
 **Frontend Dockerfile Stages:**
+
 1. **deps** - Install all dependencies with pnpm
 2. **build** - Build static assets with Vite
 3. **production** - Nginx serving static files
@@ -64,13 +67,15 @@ Both the API and frontend applications use optimized multi-stage Docker builds:
 ### Services
 
 #### PostgreSQL (postgres)
-- **Image**: postgres:15-alpine
+
+- **Image**: postgres:18-alpine
 - **Port**: 5432
 - **Health Check**: pg_isready command
 - **Volumes**: Persistent data storage
 - **Init Script**: `docker/postgres/init.sql`
 
 #### Backend API (api)
+
 - **Port**: 33450
 - **Health Check**: HTTP check on `/api/v1/health`
 - **Dependencies**: PostgreSQL (waits for healthy status)
@@ -78,6 +83,7 @@ Both the API and frontend applications use optimized multi-stage Docker builds:
 - **Production**: Optimized Node.js runtime
 
 #### Frontend App (app)
+
 - **Port**: 33460
 - **Health Check**: HTTP check on `/health`
 - **Dependencies**: API (waits for healthy status)
@@ -115,10 +121,10 @@ Development mode mounts source code for hot reload:
 
 ```yaml
 volumes:
-  - ./apps/api:/app/apps/api           # API source
-  - ./apps/app:/app/apps/app           # Frontend source
-  - ./packages:/app/packages           # Shared packages
-  - /app/node_modules                  # Preserve dependencies
+  - ./apps/api:/app/apps/api # API source
+  - ./apps/app:/app/apps/app # Frontend source
+  - ./packages:/app/packages # Shared packages
+  - /app/node_modules # Preserve dependencies
 ```
 
 ## Common Commands
@@ -292,10 +298,10 @@ Adjust resource limits in `docker-compose.yml`:
 deploy:
   resources:
     limits:
-      cpus: '1.0'
+      cpus: "1.0"
       memory: 1G
     reservations:
-      cpus: '0.5'
+      cpus: "0.5"
       memory: 512M
 ```
 

@@ -5,7 +5,7 @@ FROM node:24-alpine AS deps
 
 # Install pnpm
 RUN apk add --no-cache libc6-compat
-RUN npm install -g pnpm@10.0.0
+RUN npm install -g pnpm@10.30.1
 
 WORKDIR /app
 
@@ -27,7 +27,7 @@ RUN --mount=type=cache,id=pnpm,target=/root/.local/share/pnpm/store \
 # ============================================
 FROM node:24-alpine AS build
 
-RUN npm install -g pnpm@10.0.0 turbo@2.5.4
+RUN npm install -g pnpm@10.30.1 turbo@2.8.10
 
 WORKDIR /app
 
@@ -57,7 +57,7 @@ FROM node:24-alpine AS production
 
 # Install PostgreSQL client for pg_isready and pnpm for migrations
 RUN apk add --no-cache postgresql-client && \
-    npm install -g pnpm@10.0.0
+    npm install -g pnpm@10.30.1
 
 # Create non-root user
 RUN addgroup -g 1001 -S nodejs && \
@@ -76,9 +76,6 @@ COPY --from=build --chown=apiuser:nodejs /app/apps/api/dist ./dist
 COPY --from=build --chown=apiuser:nodejs /app/packages/db/dist ./packages/db/dist
 COPY --from=build --chown=apiuser:nodejs /app/packages/db/src ./packages/db/src
 COPY --from=build --chown=apiuser:nodejs /app/packages/db/drizzle.config.ts ./packages/db/drizzle.config.ts
-
-# Install drizzle-kit for migrations (production only needs this)
-RUN pnpm --filter @repo/db add -D drizzle-kit
 
 # Copy entrypoint script
 COPY --chown=apiuser:nodejs apps/api/docker-entrypoint.sh /app/docker-entrypoint.sh

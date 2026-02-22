@@ -7,17 +7,16 @@ import globals from "globals";
 export default tseslint.config(
 	eslint.configs.recommended,
 	...tseslint.configs.recommended,
+	reactHooks.configs.flat.recommended,
 	{
 		languageOptions: {
 			ecmaVersion: 2022,
 			globals: globals.browser,
 		},
 		plugins: {
-			"react-hooks": reactHooks,
 			"react-refresh": reactRefresh,
 		},
 		rules: {
-			...reactHooks.configs.recommended.rules,
 			"react-refresh/only-export-components": [
 				"warn",
 				{ allowConstantExport: true },

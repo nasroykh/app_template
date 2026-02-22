@@ -5,7 +5,7 @@ FROM node:24-alpine AS deps
 
 # Install pnpm
 RUN apk add --no-cache libc6-compat
-RUN npm install -g pnpm@10.0.0
+RUN npm install -g pnpm@10.30.1
 
 WORKDIR /app
 
@@ -28,7 +28,7 @@ RUN --mount=type=cache,id=pnpm,target=/root/.local/share/pnpm/store \
 # ============================================
 FROM node:24-alpine AS build
 
-RUN npm install -g pnpm@10.0.0 turbo@2.5.4
+RUN npm install -g pnpm@10.30.1 turbo@2.8.10
 
 WORKDIR /app
 
@@ -53,7 +53,7 @@ RUN pnpm --filter app build
 # ============================================
 # Stage 3: Production - Nginx serving static files
 # ============================================
-FROM nginx:alpine AS production
+FROM nginx:stable-alpine AS production
 
 # Copy custom nginx configuration
 COPY apps/app/nginx.conf /etc/nginx/conf.d/default.conf

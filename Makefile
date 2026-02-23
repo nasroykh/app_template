@@ -1,4 +1,4 @@
-.PHONY: help build up down logs logs-api logs-app logs-db ps restart clean prune validate migrate migrate-gen shell-api shell-app shell-db stats scan buildx-setup buildx-build env-setup
+.PHONY: help build up down logs logs-api logs-app logs-db ps restart clean validate migrate migrate-gen shell-api shell-app shell-db stats scan buildx-setup buildx-build env-setup
 
 # Default target
 help: ## Show this help message
@@ -62,9 +62,6 @@ clean: ## Remove containers, networks, and images (preserving volumes)
 
 clean-all: ## Remove containers, networks, images, and VOLUMES
 	docker compose down -v --rmi all
-
-prune: ## Clean up all unused Docker resources
-	docker system prune -a --volumes -f
 
 # Health and monitoring
 stats: ## Show container resource usage

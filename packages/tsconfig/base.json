@@ -18,11 +18,7 @@
 		"noImplicitReturns": true,
 		"noFallthroughCasesInSwitch": true,
 		"noImplicitOverride": true,
-		"useUnknownInCatchVariables": true,
-		"declaration": true,
-		"declarationMap": true,
-		"sourceMap": true,
-		"incremental": true
+		"useUnknownInCatchVariables": true
 	},
 	"exclude": ["node_modules", "dist"]
 }

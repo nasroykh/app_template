@@ -52,11 +52,11 @@ services:
       PORT: 33450
       HOST: 0.0.0.0
       API_V1_PREFIX: /api/v1
-      DB_URL: postgresql://${DB_USER:-app_template_user}:${DB_PASSWORD:-app_template_password}@postgres:5432/${DB_NAME:-app_template_db}?sslmode=disable
+      DB_URL: "postgresql://${DB_USER:-app_template_user}:${DB_PASSWORD:-app_template_password}@postgres:5432/${DB_NAME:-app_template_db}?sslmode=disable"
       DB_USER: ${DB_USER:-app_template_user}
       DB_PASSWORD: ${DB_PASSWORD:-app_template_password}
-      DB_HOST: postgres
-      DB_PORT: 5432
+      DB_HOST: ${DB_HOST:-postgres}
+      DB_PORT: ${DB_PORT:-5432}
       DB_NAME: ${DB_NAME:-app_template_db}
       DB_SSL_MODE: disable
       TOKEN_SECRET_KEY: ${TOKEN_SECRET_KEY}
@@ -70,6 +70,7 @@ services:
       SMTP_FROM: ${SMTP_FROM}
       SUPER_ADMIN_EMAIL: ${SUPER_ADMIN_EMAIL}
       SUPER_ADMIN_PASSWORD: ${SUPER_ADMIN_PASSWORD}
+      APP_URL_DEV: ${APP_URL_DEV:-http://localhost:33460}
     ports:
       - "33450:33450"
     networks:
@@ -85,7 +86,7 @@ services:
       interval: 30s
       timeout: 10s
       retries: 3
-      start_period: 40s
+      start_period: 60s
     deploy:
       resources:
         limits:
@@ -108,6 +109,7 @@ services:
       target: production
       args:
         NODE_ENV: production
+        VITE_API_URL: ${VITE_API_URL:-http://localhost:33450/api/v1}
     container_name: app_template_app
     restart: unless-stopped
     depends_on:
@@ -132,7 +134,7 @@ services:
       interval: 30s
       timeout: 10s
       retries: 3
-      start_period: 5s
+      start_period: 10s
     deploy:
       resources:
         limits:
@@ -150,9 +152,6 @@ services:
 networks:
   app_network:
     driver: bridge
-    ipam:
-      config:
-        - subnet: 172.20.0.0/16
 
 volumes:
   postgres_data:

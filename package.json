@@ -8,7 +8,7 @@
 		"dev": "turbo run dev",
 		"start": "turbo run start",
 		"lint": "turbo run lint",
-		"clean": "turbo run clean && rm -rf node_modules",
+		"clean": "rm -rf node_modules && rm -rf apps/api/node_modules && rm -rf apps/app/node_modules && rm -rf packages/db/node_modules && rm -rf apps/api/dist && rm -rf apps/app/dist && rm -rf packages/db/dist && rm -rf .turbo",
 		"auth:generate": "cd apps/api && pnpm dlx @better-auth/cli generate --config src/config/auth.ts --output ../../packages/db/src/models/auth/schema.ts",
 		"db:generate": "turbo run db:generate --filter=@repo/db",
 		"db:migrate": "turbo run db:migrate --filter=@repo/db",

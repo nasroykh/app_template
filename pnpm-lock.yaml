@@ -39,12 +39,24 @@ importers:
       dotenv:
         specifier: ^17.2.3
         version: 17.2.3
+      drizzle-kit:
+        specifier: ^0.31.8
+        version: 0.31.8
+      drizzle-orm:
+        specifier: ^0.45.1
+        version: 0.45.1(@types/pg@8.16.0)(kysely@0.28.9)(pg@8.16.3)
+      drizzle-zod:
+        specifier: ^0.8.3
+        version: 0.8.3(drizzle-orm@0.45.1(@types/pg@8.16.0)(kysely@0.28.9)(pg@8.16.3))(zod@4.3.5)
       hono:
         specifier: ^4.11.3
         version: 4.11.3
       nodemailer:
         specifier: ^7.0.12
         version: 7.0.12
+      pg:
+        specifier: ^8.16.3
+        version: 8.16.3
       zod:
         specifier: ^4.3.5
         version: 4.3.5
@@ -108,7 +120,7 @@ importers:
         version: 1.145.11(@tanstack/react-router@1.145.11(react-dom@19.2.3(react@19.2.3))(react@19.2.3))(@tanstack/router-core@1.145.11)(csstype@3.2.3)(react-dom@19.2.3(react@19.2.3))(react@19.2.3)(solid-js@1.9.10)
       api:
         specifier: workspace:*
-        version: file:apps/api(@orpc/contract@1.13.2)(@types/pg@8.16.0)(drizzle-kit@0.31.8)(drizzle-orm@0.45.1(@types/pg@8.16.0)(kysely@0.28.9)(pg@8.16.3))(fastify@5.6.2)(kysely@0.28.9)(pg@8.16.3)(react-dom@19.2.3(react@19.2.3))(react@19.2.3)(solid-js@1.9.10)(ws@8.18.3)
+        version: file:apps/api(@orpc/contract@1.13.2)(@types/pg@8.16.0)(fastify@5.6.2)(kysely@0.28.9)(react-dom@19.2.3(react@19.2.3))(react@19.2.3)(solid-js@1.9.10)(ws@8.18.3)
       better-auth:
         specifier: ^1.4.10
         version: 1.4.10(drizzle-kit@0.31.8)(drizzle-orm@0.45.1(@types/pg@8.16.0)(kysely@0.28.9)(pg@8.16.3))(pg@8.16.3)(react-dom@19.2.3(react@19.2.3))(react@19.2.3)(solid-js@1.9.10)
@@ -228,6 +240,52 @@ importers:
         specifier: ^7.3.1
         version: 7.3.1(@types/node@25.0.3)(jiti@2.6.1)(lightningcss@1.30.2)(tsx@4.21.0)(yaml@2.8.2)
 
+  apps/app_clone:
+    dependencies:
+      react:
+        specifier: ^19.2.0
+        version: 19.2.3
+      react-dom:
+        specifier: ^19.2.0
+        version: 19.2.3(react@19.2.3)
+    devDependencies:
+      '@eslint/js':
+        specifier: ^9.39.1
+        version: 9.39.2
+      '@types/node':
+        specifier: ^24.10.1
+        version: 24.10.13
+      '@types/react':
+        specifier: ^19.2.7
+        version: 19.2.7
+      '@types/react-dom':
+        specifier: ^19.2.3
+        version: 19.2.3(@types/react@19.2.7)
+      '@vitejs/plugin-react-swc':
+        specifier: ^4.2.2
+        version: 4.2.2(vite@7.3.1(@types/node@24.10.13)(jiti@2.6.1)(lightningcss@1.30.2)(tsx@4.21.0)(yaml@2.8.2))
+      eslint:
+        specifier: ^9.39.1
+        version: 9.39.2(jiti@2.6.1)
+      eslint-plugin-react-hooks:
+        specifier: ^7.0.1
+        version: 7.0.1(eslint@9.39.2(jiti@2.6.1))
+      eslint-plugin-react-refresh:
+        specifier: ^0.4.24
+        version: 0.4.26(eslint@9.39.2(jiti@2.6.1))
+      globals:
+        specifier: ^16.5.0
+        version: 16.5.0
+      typescript:
+        specifier: ~5.9.3
+        version: 5.9.3
+      typescript-eslint:
+        specifier: ^8.48.0
+        version: 8.52.0(eslint@9.39.2(jiti@2.6.1))(typescript@5.9.3)
+      vite:
+        specifier: ^7.3.1
+        version: 7.3.1(@types/node@24.10.13)(jiti@2.6.1)(lightningcss@1.30.2)(tsx@4.21.0)(yaml@2.8.2)
+
   packages/db:
     dependencies:
       dotenv:
@@ -245,6 +303,9 @@ importers:
       pg:
         specifier: ^8.16.3
         version: 8.16.3
+      tsx:
+        specifier: ^4.21.0
+        version: 4.21.0
       zod:
         specifier: ^4.3.5
         version: 4.3.5
@@ -258,9 +319,6 @@ importers:
       rimraf:
         specifier: ^6.1.2
         version: 6.1.2
-      tsx:
-        specifier: ^4.21.0
-        version: 4.21.0
       typescript:
         specifier: ^5.9.3
         version: 5.9.3
@@ -2256,6 +2314,9 @@ packages:
   '@types/json-schema@7.0.15':
     resolution: {integrity: sha512-5+fP8P8MFNC+AyZCDxrB2pkZFPGzqQWUzpSeuuVLvm8VMcorNYavBqoFcxK8bQz4Qsbn4oUEEem4wDLfcysGHA==}
 
+  '@types/node@24.10.13':
+    resolution: {integrity: sha512-oH72nZRfDv9lADUBSo104Aq7gPHpQZc4BTx38r9xf9pg5LfP6EzSyH2n7qFmmxRQXh7YlUXODcYsg6PuTDSxGg==}
+
   '@types/node@25.0.3':
     resolution: {integrity: sha512-W609buLVRVmeW693xKfzHeIV6nJGGz98uCPfeXI1ELMLXVeKYZ9m15fAMSaUPBHYLGFsVRcMmSCksQOrZV9BYA==}
 
@@ -2987,6 +3048,11 @@ packages:
     peerDependencies:
       eslint: ^3.0.0 || ^4.0.0 || ^5.0.0 || ^6.0.0 || ^7.0.0 || ^8.0.0-0 || ^9.0.0
 
+  eslint-plugin-react-refresh@0.4.26:
+    resolution: {integrity: sha512-1RETEylht2O6FM/MvgnyvT+8K21wLqDNg4qD51Zj3guhjt433XbnnkVttHMyaVyAFD03QSV4LPS5iE3VQmO7XQ==}
+    peerDependencies:
+      eslint: '>=8.40'
+
   eslint-plugin-react-refresh@0.5.0:
     resolution: {integrity: sha512-ZYvmh7VfVgqR/7wR71I3Zl6hK/C5CcxdWYKZSpHawS5JCNgE4efhQWg/+/WPpgGAp9Ngp/rRZYyaIwmPQBq/lA==}
     peerDependencies:
@@ -3238,6 +3304,10 @@ packages:
 
   globals@14.0.0:
     resolution: {integrity: sha512-oahGvuMGQlPw/ivIYBjVSrWAfWLBeku5tpPE2fOPLi+WHffIWbuh2tCjhyQhTBPMf5E9jDEH4FOmTYgYwbKwtQ==}
+    engines: {node: '>=18'}
+
+  globals@16.5.0:
+    resolution: {integrity: sha512-c/c15i26VrJ4IRt5Z89DnIzCGDn9EcebibhAOjw5ibqEHsE1wLUgkPn9RDmNcUKyU87GeaL633nyJ+pplFR2ZQ==}
     engines: {node: '>=18'}
 
   globals@17.0.0:
@@ -6241,6 +6311,7 @@ snapshots:
       drizzle-orm: 0.45.1(@types/pg@8.16.0)(kysely@0.28.9)(pg@8.16.3)
       drizzle-zod: 0.8.3(drizzle-orm@0.45.1(@types/pg@8.16.0)(kysely@0.28.9)(pg@8.16.3))(zod@4.3.5)
       pg: 8.16.3
+      tsx: 4.21.0
       zod: 4.3.5
     transitivePeerDependencies:
       - '@aws-sdk/client-rds-data'
@@ -6929,6 +7000,10 @@ snapshots:
 
   '@types/json-schema@7.0.15': {}
 
+  '@types/node@24.10.13':
+    dependencies:
+      undici-types: 7.16.0
+
   '@types/node@25.0.3':
     dependencies:
       undici-types: 7.16.0
@@ -7049,6 +7124,14 @@ snapshots:
       '@typescript-eslint/types': 8.52.0
       eslint-visitor-keys: 4.2.1
 
+  '@vitejs/plugin-react-swc@4.2.2(vite@7.3.1(@types/node@24.10.13)(jiti@2.6.1)(lightningcss@1.30.2)(tsx@4.21.0)(yaml@2.8.2))':
+    dependencies:
+      '@rolldown/pluginutils': 1.0.0-beta.47
+      '@swc/core': 1.15.8
+      vite: 7.3.1(@types/node@24.10.13)(jiti@2.6.1)(lightningcss@1.30.2)(tsx@4.21.0)(yaml@2.8.2)
+    transitivePeerDependencies:
+      - '@swc/helpers'
+
   '@vitejs/plugin-react-swc@4.2.2(vite@7.3.1(@types/node@25.0.3)(jiti@2.6.1)(lightningcss@1.30.2)(tsx@4.21.0)(yaml@2.8.2))':
     dependencies:
       '@rolldown/pluginutils': 1.0.0-beta.47
@@ -7106,7 +7189,7 @@ snapshots:
       normalize-path: 3.0.0
       picomatch: 2.3.1
 
-  api@file:apps/api(@orpc/contract@1.13.2)(@types/pg@8.16.0)(drizzle-kit@0.31.8)(drizzle-orm@0.45.1(@types/pg@8.16.0)(kysely@0.28.9)(pg@8.16.3))(fastify@5.6.2)(kysely@0.28.9)(pg@8.16.3)(react-dom@19.2.3(react@19.2.3))(react@19.2.3)(solid-js@1.9.10)(ws@8.18.3):
+  api@file:apps/api(@orpc/contract@1.13.2)(@types/pg@8.16.0)(fastify@5.6.2)(kysely@0.28.9)(react-dom@19.2.3(react@19.2.3))(react@19.2.3)(solid-js@1.9.10)(ws@8.18.3):
     dependencies:
       '@hono/node-server': 1.19.9(hono@4.11.8)
       '@orpc/openapi': 1.13.2(fastify@5.6.2)(ws@8.18.3)
@@ -7116,8 +7199,12 @@ snapshots:
       '@scalar/hono-api-reference': 0.9.30(hono@4.11.8)
       better-auth: 1.4.10(drizzle-kit@0.31.8)(drizzle-orm@0.45.1(@types/pg@8.16.0)(kysely@0.28.9)(pg@8.16.3))(pg@8.16.3)(react-dom@19.2.3(react@19.2.3))(react@19.2.3)(solid-js@1.9.10)
       dotenv: 17.2.3
+      drizzle-kit: 0.31.8
+      drizzle-orm: 0.45.1(@types/pg@8.16.0)(kysely@0.28.9)(pg@8.16.3)
+      drizzle-zod: 0.8.3(drizzle-orm@0.45.1(@types/pg@8.16.0)(kysely@0.28.9)(pg@8.16.3))(zod@4.3.5)
       hono: 4.11.8
       nodemailer: 7.0.12
+      pg: 8.16.3
       zod: 4.3.5
     transitivePeerDependencies:
       - '@aws-sdk/client-rds-data'
@@ -7144,8 +7231,6 @@ snapshots:
       - better-sqlite3
       - bun-types
       - crossws
-      - drizzle-kit
-      - drizzle-orm
       - expo-sqlite
       - fastify
       - gel
@@ -7154,7 +7239,6 @@ snapshots:
       - mongodb
       - mysql2
       - next
-      - pg
       - pg-native
       - postgres
       - prisma
@@ -7664,6 +7748,10 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
+  eslint-plugin-react-refresh@0.4.26(eslint@9.39.2(jiti@2.6.1)):
+    dependencies:
+      eslint: 9.39.2(jiti@2.6.1)
+
   eslint-plugin-react-refresh@0.5.0(eslint@9.39.2(jiti@2.6.1)):
     dependencies:
       eslint: 9.39.2(jiti@2.6.1)
@@ -8004,6 +8092,8 @@ snapshots:
       path-scurry: 2.0.1
 
   globals@14.0.0: {}
+
+  globals@16.5.0: {}
 
   globals@17.0.0: {}
 
@@ -9254,6 +9344,22 @@ snapshots:
       d3-shape: 3.2.0
       d3-time: 3.1.0
       d3-timer: 3.0.1
+
+  vite@7.3.1(@types/node@24.10.13)(jiti@2.6.1)(lightningcss@1.30.2)(tsx@4.21.0)(yaml@2.8.2):
+    dependencies:
+      esbuild: 0.27.2
+      fdir: 6.5.0(picomatch@4.0.3)
+      picomatch: 4.0.3
+      postcss: 8.5.6
+      rollup: 4.55.1
+      tinyglobby: 0.2.15
+    optionalDependencies:
+      '@types/node': 24.10.13
+      fsevents: 2.3.3
+      jiti: 2.6.1
+      lightningcss: 1.30.2
+      tsx: 4.21.0
+      yaml: 2.8.2
 
   vite@7.3.1(@types/node@25.0.3)(jiti@2.6.1)(lightningcss@1.30.2)(tsx@4.21.0)(yaml@2.8.2):
     dependencies:

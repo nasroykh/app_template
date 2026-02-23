@@ -15,7 +15,7 @@ echo "✅ PostgreSQL is ready!"
 # Run migrations automatically in production
 if [ "$NODE_ENV" = "production" ]; then
   echo "🔄 Running database migrations..."
-  cd /app && pnpm --filter @repo/db db:migrate || {
+  cd /app/packages/db && npx drizzle-kit migrate --config drizzle.config.ts || {
     echo "❌ Migration failed!"
     exit 1
   }
@@ -24,4 +24,5 @@ fi
 
 # Start the application
 echo "🎯 Starting application..."
+cd /app
 exec node dist/index.js

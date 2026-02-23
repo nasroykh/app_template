@@ -29,7 +29,7 @@ const initSuperAdmin = async () => {
 			// Ensure super admin has admin role
 			await db
 				.update(user)
-				.set({ role: "admin" })
+				.set({ role: "admin", emailVerified: true })
 				.where(eq(user.id, superAdminExists.id));
 			return;
 		}
@@ -42,6 +42,11 @@ const initSuperAdmin = async () => {
 				role: "admin",
 			},
 		});
+
+		await db
+			.update(user)
+			.set({ emailVerified: true })
+			.where(eq(user.email, env.SUPER_ADMIN_EMAIL));
 
 		console.log("Super admin initialized successfully");
 	} catch (error) {

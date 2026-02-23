@@ -1,45 +1,22 @@
-# ============================================
-# Stage 1: Dependencies - Install all dependencies
-# ============================================
-FROM node:24-alpine AS deps
-
-# Install pnpm
-RUN apk add --no-cache libc6-compat
-RUN npm install -g pnpm@10.30.1
-
-WORKDIR /app
-
-# Copy workspace configuration
-COPY pnpm-workspace.yaml package.json pnpm-lock.yaml ./
-
-# Copy all package.json files for workspace resolution
-COPY apps/api/package.json ./apps/api/package.json
-COPY packages/db/package.json ./packages/db/package.json
-COPY packages/tsconfig/package.json ./packages/tsconfig/package.json
-COPY packages/eslint-config/package.json ./packages/eslint-config/package.json
-
-# Install dependencies with frozen lockfile
-RUN --mount=type=cache,id=pnpm,target=/root/.local/share/pnpm/store \
-    pnpm install --frozen-lockfile
 
 # ============================================
-# Stage 2: Build - Build shared packages and API
+# Stage 1: Build - Build shared packages and API
 # ============================================
 FROM node:24-alpine AS build
 
+RUN apk add --no-cache libc6-compat
 RUN npm install -g pnpm@10.30.1 turbo@2.8.10
 
 WORKDIR /app
-
-# Copy dependencies from deps stage
-COPY --from=deps /app/node_modules ./node_modules
-COPY --from=deps /app/apps ./apps
-COPY --from=deps /app/packages ./packages
 
 # Copy source code
 COPY pnpm-workspace.yaml package.json pnpm-lock.yaml turbo.json ./
 COPY packages ./packages
 COPY apps/api ./apps/api
+
+# Install dependencies using cached pnpm store
+RUN --mount=type=cache,id=pnpm,target=/root/.local/share/pnpm/store \
+    pnpm install --frozen-lockfile
 
 # Build the database package first (dependency)
 RUN pnpm --filter @repo/db build
@@ -75,6 +52,7 @@ COPY --from=build --chown=apiuser:nodejs /app/pruned/package.json ./apps/api/pac
 COPY --from=build --chown=apiuser:nodejs /app/apps/api/dist ./dist
 COPY --from=build --chown=apiuser:nodejs /app/packages/db/dist ./packages/db/dist
 COPY --from=build --chown=apiuser:nodejs /app/packages/db/src ./packages/db/src
+COPY --from=build --chown=apiuser:nodejs /app/packages/db/drizzle ./packages/db/drizzle
 COPY --from=build --chown=apiuser:nodejs /app/packages/db/drizzle.config.ts ./packages/db/drizzle.config.ts
 
 # Copy entrypoint script
@@ -88,7 +66,7 @@ USER apiuser
 EXPOSE 33450
 
 # Health check
-HEALTHCHECK --interval=30s --timeout=10s --start-period=40s --retries=3 \
+HEALTHCHECK --interval=30s --timeout=10s --start-period=60s --retries=3 \
     CMD node -e "require('http').get('http://localhost:33450/api/v1/health', (res) => { process.exit(res.statusCode === 200 ? 0 : 1); }).on('error', () => process.exit(1));"
 
 # Use entrypoint script to run migrations before starting

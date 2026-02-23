@@ -53,6 +53,7 @@ import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Separator } from "@/components/ui/separator";
 import { Checkbox } from "@/components/ui/checkbox";
+import { Label } from "@/components/ui/label";
 import {
 	AlertDialog,
 	AlertDialogAction,
@@ -856,7 +857,7 @@ function EditUserDialog({
 					<Separator />
 
 					<div className="space-y-2">
-						<FormLabel>Account Role</FormLabel>
+						<Label>Account Role</Label>
 						<Select
 							defaultValue={
 								Array.isArray(user?.role) ? user.role[0] : user?.role
@@ -912,7 +913,7 @@ function ResetPasswordDialog({
 				</DialogHeader>
 				<div className="space-y-4 py-4">
 					<div className="space-y-2">
-						<FormLabel>New Password</FormLabel>
+						<Label>New Password</Label>
 						<Input
 							type="password"
 							placeholder="Min 8 characters"
@@ -979,7 +980,7 @@ function BanUserDialog({
 				</DialogHeader>
 				<div className="space-y-4 py-4">
 					<div className="space-y-2">
-						<FormLabel>Ban Reason (Optional)</FormLabel>
+						<Label>Ban Reason (Optional)</Label>
 						<Textarea
 							placeholder="e.g. Terms of service violation, Payment issues..."
 							value={reason}
@@ -1098,7 +1099,7 @@ function BulkBanDialog({
 					<DialogTitle>Ban {userIds.length} users?</DialogTitle>
 				</DialogHeader>
 				<div className="space-y-4 py-4">
-					<FormLabel>Ban Reason</FormLabel>
+					<Label>Ban Reason</Label>
 					<Textarea
 						placeholder="Optional reason for bulk ban..."
 						value={reason}

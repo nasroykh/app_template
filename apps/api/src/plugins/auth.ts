@@ -8,10 +8,6 @@ import { eq } from "@repo/db/drizzle-orm";
 export const registerAuth = (app: Hono) => {
 	initSuperAdmin();
 
-	// Mount the Better Auth handler.
-	// The config defines basePath: `${env.API_V1_PREFIX}/auth`,
-	// and the app (index.ts) is base-pathed to env.API_V1_PREFIX.
-	// So mounting at /auth/* here is correct.
 	app.on(["POST", "GET"], `/auth/*`, (c) => {
 		return auth.handler(c.req.raw);
 	});
@@ -20,19 +16,27 @@ export const registerAuth = (app: Hono) => {
 const initSuperAdmin = async () => {
 	try {
 		const [superAdminExists] = await db
-			.select({ id: user.id })
+			.select({
+				id: user.id,
+				emailVerified: user.emailVerified,
+				role: user.role,
+			})
 			.from(user)
 			.where(eq(user.email, env.SUPER_ADMIN_EMAIL))
 			.limit(1);
 
-		if (superAdminExists) {
-			// Ensure super admin has admin role
+		if (
+			superAdminExists &&
+			(!superAdminExists.emailVerified || superAdminExists.role !== "admin")
+		) {
 			await db
 				.update(user)
 				.set({ role: "admin", emailVerified: true })
 				.where(eq(user.id, superAdminExists.id));
 			return;
 		}
+
+		if (superAdminExists) return;
 
 		await auth.api.createUser({
 			body: {

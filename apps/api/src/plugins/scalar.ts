@@ -15,7 +15,7 @@ export const registerScalar = (app: Hono) => {
 
 		const spec = await generator.generate(router, {
 			info: {
-				title: "App Template API",
+				title: "Foxmayn AI API",
 				version: "0.0.0",
 			},
 		});
@@ -27,6 +27,6 @@ export const registerScalar = (app: Hono) => {
 		`/scalar`,
 		Scalar({
 			url: `${env.API_V1_PREFIX}${specEndpoint}`,
-		})
+		}),
 	);
 };

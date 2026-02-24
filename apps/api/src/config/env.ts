@@ -39,6 +39,16 @@ const envSchema = z.object({
 
 	// Better Auth Configuration
 	BETTER_AUTH_SECRET: z.string(),
+
+	// Redis Configuration
+	REDIS_URL: z.url(),
+
+	// OpenRouter Configuration
+	OPENROUTER_API_KEY: z.string(),
+
+	// Qdrant Configuration
+	QDRANT_URL: z.url(),
+	QDRANT_COLLECTION_NAME: z.string(),
 });
 
 // Validate the environment variables and export the result

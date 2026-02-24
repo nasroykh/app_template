@@ -6,7 +6,9 @@
 		"tsBuildInfoFile": "./dist/.tsbuildinfo",
 		"jsx": "react-jsx",
 		"jsxImportSource": "hono/jsx",
-		"types": ["node"]
+		"types": ["node"],
+		"declaration": false,
+		"declarationMap": false
 	},
 	"include": ["src/**/*"],
 	"exclude": ["node_modules", "dist"]

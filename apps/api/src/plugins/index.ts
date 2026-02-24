@@ -5,6 +5,7 @@ import { registerORPC } from "./orpc";
 import { registerORPCOpenAPI } from "./orpc-openapi";
 import { registerScalar } from "./scalar";
 import { registerAuth } from "./auth";
+import { registerBullBoard } from "./bull-board";
 
 export const registerPlugins = (app: Hono) => {
 	registerCors(app);
@@ -12,4 +13,5 @@ export const registerPlugins = (app: Hono) => {
 	registerORPCOpenAPI(app);
 	registerScalar(app);
 	registerAuth(app);
+	registerBullBoard(app);
 };

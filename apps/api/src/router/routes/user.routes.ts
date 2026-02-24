@@ -1,6 +1,9 @@
 import { z } from "zod";
 import { ORPCError } from "@orpc/server";
 
+import { db, user } from "@repo/db";
+import { eq } from "@repo/db/drizzle-orm";
+
 import { adminProcedure, authProcedure, publicProcedure } from "../middleware";
 import { env } from "../../config/env";
 import {
@@ -148,8 +151,14 @@ export const userRoutes = {
 		})
 		.input(createUserSchema)
 		.handler(async ({ input, context }) => {
-			const user = await createUser(input, context.headers);
-			return user;
+			const createdUser = await createUser(input, context.headers);
+			await db
+				.update(user)
+				.set({
+					emailVerified: true,
+				})
+				.where(eq(user.id, createdUser.user.id));
+			return createdUser;
 		}),
 
 	// -------------------------------------------------------------------------

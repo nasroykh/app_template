@@ -31,7 +31,15 @@ RUN pnpm --filter api build
 RUN pnpm --filter worker build
 
 # Prune dev dependencies for production
-RUN pnpm --filter worker --prod deploy /app/pruned
+RUN pnpm --filter worker --prod deploy --legacy /app/pruned
+
+# Inject built dist into the deployed workspace packages
+# pnpm deploy --legacy copies packages from install-time (before build)
+# so we need to copy the compiled dist into the deployed copies
+RUN cp -r /app/apps/api/dist /app/pruned/node_modules/@repo/api/dist && \
+    cp -r /app/packages/llm/dist /app/pruned/node_modules/@repo/llm/dist 2>/dev/null; \
+    cp -r /app/packages/qdrant/dist /app/pruned/node_modules/@repo/qdrant/dist 2>/dev/null; \
+    true
 
 # ============================================
 # Stage 2: Production - Minimal runtime image
@@ -47,18 +55,12 @@ RUN addgroup -g 1001 -S nodejs && \
 
 WORKDIR /app
 
-# Copy pruned node_modules (external dependencies)
+# Copy pruned node_modules (now includes built workspace package dists)
 COPY --from=build --chown=workeruser:nodejs /app/pruned/node_modules ./node_modules
 COPY --from=build --chown=workeruser:nodejs /app/pruned/package.json ./package.json
 
 # Copy worker dist
 COPY --from=build --chown=workeruser:nodejs /app/apps/worker/dist ./dist
-
-# Copy workspace package dists (referenced via node_modules symlinks)
-COPY --from=build --chown=workeruser:nodejs /app/apps/api/dist ./apps/api/dist
-COPY --from=build --chown=workeruser:nodejs /app/packages/db/dist ./packages/db/dist
-COPY --from=build --chown=workeruser:nodejs /app/packages/llm/dist ./packages/llm/dist
-COPY --from=build --chown=workeruser:nodejs /app/packages/qdrant/dist ./packages/qdrant/dist
 
 # Copy entrypoint script
 COPY --chown=workeruser:nodejs apps/worker/docker-entrypoint.sh /app/docker-entrypoint.sh

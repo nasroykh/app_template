@@ -8,7 +8,7 @@
 	},
 	"dependencies": {
 		"@repo/db": "workspace:*",
-		"api": "workspace:*"
+		"@repo/api": "workspace:*"
 	},
 	"devDependencies": {
 		"@repo/tsconfig": "workspace:*",

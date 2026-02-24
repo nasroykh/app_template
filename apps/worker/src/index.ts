@@ -9,9 +9,11 @@
  */
 
 import { initDB, disconnectDB } from "@repo/db";
-import { createDocumentWorker } from "api/document";
-import { createEmailWorker } from "api/email";
-import { closeQueues } from "api/jobs";
+import {
+	createDocumentWorker,
+	createEmailWorker,
+	closeQueues,
+} from "@repo/api/jobs";
 
 // Track workers for graceful shutdown
 const workers: { close: () => Promise<void> }[] = [];

@@ -57,7 +57,7 @@ services:
       DB_URL: "postgresql://${DB_USER:-app_template_user}:${DB_PASSWORD:-app_template_password}@postgres:5432/${DB_NAME:-app_template_db}?sslmode=disable"
       DB_USER: ${DB_USER:-app_template_user}
       DB_PASSWORD: ${DB_PASSWORD:-app_template_password}
-      DB_HOST: ${DB_HOST:-postgres}
+      DB_HOST: postgres
       DB_PORT: ${DB_PORT:-5432}
       DB_NAME: ${DB_NAME:-app_template_db}
       DB_SSL_MODE: disable
@@ -157,7 +157,7 @@ services:
 
   # Redis (BullMQ queue broker)
   redis:
-    image: redis:7-alpine
+    image: redis:8.0.6-alpine
     container_name: app_template_redis
     restart: unless-stopped
     ports:
@@ -194,7 +194,7 @@ services:
     networks:
       - app_network
     healthcheck:
-      test: ["CMD-SHELL", "wget --no-verbose --tries=1 --spider http://localhost:6333/healthz || exit 1"]
+      test: ["CMD-SHELL", "bash -c ':> /dev/tcp/localhost/6333' || exit 1"]
       interval: 10s
       timeout: 5s
       retries: 5

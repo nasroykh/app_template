@@ -1,5 +1,5 @@
 {
-	"name": "api",
+	"name": "@repo/api",
 	"main": "./dist/index.js",
 	"types": "./src/router/index.ts",
 	"exports": {
@@ -13,14 +13,6 @@
 		"./jobs": {
 			"types": "./src/jobs/index.ts",
 			"default": "./dist/jobs/index.js"
-		},
-		"./document": {
-			"types": "./src/jobs/document/document.worker.ts",
-			"default": "./dist/jobs/document/document.worker.js"
-		},
-		"./email": {
-			"types": "./src/jobs/email/email.worker.ts",
-			"default": "./dist/jobs/email/email.worker.js"
 		}
 	},
 	"scripts": {

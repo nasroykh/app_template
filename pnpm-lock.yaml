@@ -3,7 +3,6 @@ lockfileVersion: '9.0'
 settings:
   autoInstallPeers: true
   excludeLinksFromLockfile: false
-  injectWorkspacePackages: true
 
 importers:
 
@@ -38,7 +37,7 @@ importers:
         version: 1.13.2(@orpc/contract@1.13.2)(@orpc/server@1.13.2(fastify@5.6.2)(ws@8.18.3))(fastify@5.6.2)(ws@8.18.3)(zod@4.3.5)
       '@repo/db':
         specifier: workspace:*
-        version: file:packages/db(@types/pg@8.16.0)(kysely@0.28.9)
+        version: link:../../packages/db
       '@repo/llm':
         specifier: workspace:*
         version: link:../../packages/llm
@@ -136,9 +135,12 @@ importers:
       '@orpc/tanstack-query':
         specifier: ^1.13.2
         version: 1.13.2(@orpc/client@1.13.2)(@tanstack/query-core@5.90.16)
+      '@repo/api':
+        specifier: workspace:*
+        version: link:../api
       '@repo/db':
         specifier: workspace:*
-        version: file:packages/db(@types/pg@8.16.0)(kysely@0.28.9)
+        version: link:../../packages/db
       '@tabler/icons-react':
         specifier: ^3.36.1
         version: 3.36.1(react@19.2.3)
@@ -154,9 +156,6 @@ importers:
       '@tanstack/react-router-devtools':
         specifier: ^1.145.11
         version: 1.145.11(@tanstack/react-router@1.145.11(react-dom@19.2.3(react@19.2.3))(react@19.2.3))(@tanstack/router-core@1.145.11)(csstype@3.2.3)(react-dom@19.2.3(react@19.2.3))(react@19.2.3)(solid-js@1.9.10)
-      api:
-        specifier: workspace:*
-        version: file:apps/api(@bull-board/ui@6.19.0)(@langchain/core@1.1.27(openai@6.22.0(ws@8.18.3)(zod@4.3.5)))(@orpc/contract@1.13.2)(@types/pg@8.16.0)(fastify@5.6.2)(kysely@0.28.9)(react-dom@19.2.3(react@19.2.3))(react@19.2.3)(solid-js@1.9.10)(typescript@5.9.3)(ws@8.18.3)
       better-auth:
         specifier: ^1.4.10
         version: 1.4.10(drizzle-kit@0.31.8)(drizzle-orm@0.45.1(@types/pg@8.16.0)(kysely@0.28.9)(pg@8.16.3))(pg@8.16.3)(react-dom@19.2.3(react@19.2.3))(react@19.2.3)(solid-js@1.9.10)
@@ -278,12 +277,12 @@ importers:
 
   apps/worker:
     dependencies:
+      '@repo/api':
+        specifier: workspace:*
+        version: link:../api
       '@repo/db':
         specifier: workspace:*
-        version: file:packages/db(@types/pg@8.16.0)(kysely@0.28.9)
-      api:
-        specifier: workspace:*
-        version: file:apps/api(@bull-board/ui@6.19.0)(@langchain/core@1.1.27(openai@6.22.0(ws@8.18.3)(zod@4.3.6)))(@orpc/contract@1.13.2)(@types/pg@8.16.0)(kysely@0.28.9)(react-dom@19.2.3(react@19.2.3))(react@19.2.3)(solid-js@1.9.10)(typescript@5.9.3)(ws@8.18.3)
+        version: link:../../packages/db
     devDependencies:
       '@repo/tsconfig':
         specifier: workspace:*
@@ -1877,15 +1876,6 @@ packages:
       '@types/react':
         optional: true
 
-  '@repo/db@file:packages/db':
-    resolution: {directory: packages/db, type: directory}
-
-  '@repo/llm@file:packages/llm':
-    resolution: {directory: packages/llm, type: directory}
-
-  '@repo/qdrant@file:packages/qdrant':
-    resolution: {directory: packages/qdrant, type: directory}
-
   '@rolldown/pluginutils@1.0.0-beta.47':
     resolution: {integrity: sha512-8QagwMH3kNCuzD8EWL8R2YPW5e4OrHNSAHRFDdmFqEwEaD/KcNKjVoumo+gP2vW5eKB2UPbM6vTYiGZX0ixLnw==}
 
@@ -2701,9 +2691,6 @@ packages:
   anymatch@3.1.3:
     resolution: {integrity: sha512-KMReFUr0B4t+D+OBkjR3KYqvocp2XaSzO55UcB6mgQMd3KbcE+mWTyvVV7D/zsdEbNnV6acZUutkiHQXvTr1Rw==}
     engines: {node: '>= 8'}
-
-  api@file:apps/api:
-    resolution: {directory: apps/api, type: directory}
 
   argparse@1.0.10:
     resolution: {integrity: sha512-o5Roy6tNG4SL/FOkCAN6RzjiakZS25RLYFrcMttJqbdd8BWrnA+fGz57iN5Pb06pvBGvl5gQ0B48dJlslXvoTg==}
@@ -6488,32 +6475,9 @@ snapshots:
       - '@opentelemetry/sdk-trace-base'
       - openai
 
-  '@langchain/core@1.1.27(openai@6.22.0(ws@8.18.3)(zod@4.3.6))':
-    dependencies:
-      '@cfworker/json-schema': 4.1.1
-      ansi-styles: 5.2.0
-      camelcase: 6.3.0
-      decamelize: 1.2.0
-      js-tiktoken: 1.0.21
-      langsmith: 0.5.6(openai@6.22.0(ws@8.18.3)(zod@4.3.6))
-      mustache: 4.2.0
-      p-queue: 6.6.2
-      uuid: 10.0.0
-      zod: 4.3.6
-    transitivePeerDependencies:
-      - '@opentelemetry/api'
-      - '@opentelemetry/exporter-trace-otlp-proto'
-      - '@opentelemetry/sdk-trace-base'
-      - openai
-
   '@langchain/textsplitters@1.0.1(@langchain/core@1.1.27(openai@6.22.0(ws@8.18.3)(zod@4.3.5)))':
     dependencies:
       '@langchain/core': 1.1.27(openai@6.22.0(ws@8.18.3)(zod@4.3.5))
-      js-tiktoken: 1.0.21
-
-  '@langchain/textsplitters@1.0.1(@langchain/core@1.1.27(openai@6.22.0(ws@8.18.3)(zod@4.3.6)))':
-    dependencies:
-      '@langchain/core': 1.1.27(openai@6.22.0(ws@8.18.3)(zod@4.3.6))
       js-tiktoken: 1.0.21
 
   '@mixmark-io/domino@2.2.0': {}
@@ -6804,38 +6768,6 @@ snapshots:
       - fastify
       - ws
 
-  '@orpc/zod@1.13.2(@orpc/contract@1.13.2)(@orpc/server@1.13.2(fastify@5.6.2)(ws@8.18.3))(fastify@5.6.2)(ws@8.18.3)(zod@4.3.6)':
-    dependencies:
-      '@orpc/contract': 1.13.2
-      '@orpc/json-schema': 1.13.2(fastify@5.6.2)(ws@8.18.3)
-      '@orpc/openapi': 1.13.2(fastify@5.6.2)(ws@8.18.3)
-      '@orpc/server': 1.13.2(fastify@5.6.2)(ws@8.18.3)
-      '@orpc/shared': 1.13.2
-      escape-string-regexp: 5.0.0
-      wildcard-match: 5.1.4
-      zod: 4.3.6
-    transitivePeerDependencies:
-      - '@opentelemetry/api'
-      - crossws
-      - fastify
-      - ws
-
-  '@orpc/zod@1.13.2(@orpc/contract@1.13.2)(@orpc/server@1.13.2(ws@8.18.3))(ws@8.18.3)(zod@4.3.6)':
-    dependencies:
-      '@orpc/contract': 1.13.2
-      '@orpc/json-schema': 1.13.2(fastify@5.6.2)(ws@8.18.3)
-      '@orpc/openapi': 1.13.2(fastify@5.6.2)(ws@8.18.3)
-      '@orpc/server': 1.13.2(fastify@5.6.2)(ws@8.18.3)
-      '@orpc/shared': 1.13.2
-      escape-string-regexp: 5.0.0
-      wildcard-match: 5.1.4
-      zod: 4.3.6
-    transitivePeerDependencies:
-      - '@opentelemetry/api'
-      - crossws
-      - fastify
-      - ws
-
   '@pinojs/redact@0.4.0':
     optional: true
 
@@ -7006,64 +6938,6 @@ snapshots:
     optionalDependencies:
       '@types/react': 19.2.7
 
-  '@repo/db@file:packages/db(@types/pg@8.16.0)(kysely@0.28.9)':
-    dependencies:
-      dotenv: 17.3.1
-      drizzle-kit: 0.31.8
-      drizzle-orm: 0.45.1(@types/pg@8.16.0)(kysely@0.28.9)(pg@8.16.3)
-      drizzle-zod: 0.8.3(drizzle-orm@0.45.1(@types/pg@8.16.0)(kysely@0.28.9)(pg@8.16.3))(zod@4.3.6)
-      pg: 8.16.3
-      tsx: 4.21.0
-      zod: 4.3.6
-    transitivePeerDependencies:
-      - '@aws-sdk/client-rds-data'
-      - '@cloudflare/workers-types'
-      - '@electric-sql/pglite'
-      - '@libsql/client'
-      - '@libsql/client-wasm'
-      - '@neondatabase/serverless'
-      - '@op-engineering/op-sqlite'
-      - '@opentelemetry/api'
-      - '@planetscale/database'
-      - '@prisma/client'
-      - '@tidbcloud/serverless'
-      - '@types/better-sqlite3'
-      - '@types/pg'
-      - '@types/sql.js'
-      - '@upstash/redis'
-      - '@vercel/postgres'
-      - '@xata.io/client'
-      - better-sqlite3
-      - bun-types
-      - expo-sqlite
-      - gel
-      - knex
-      - kysely
-      - mysql2
-      - pg-native
-      - postgres
-      - prisma
-      - sql.js
-      - sqlite3
-      - supports-color
-
-  '@repo/llm@file:packages/llm(ws@8.18.3)':
-    dependencies:
-      '@openrouter/sdk': 0.8.0
-      dotenv: 17.3.1
-      openai: 6.22.0(ws@8.18.3)(zod@4.3.6)
-      zod: 4.3.6
-    transitivePeerDependencies:
-      - ws
-
-  '@repo/qdrant@file:packages/qdrant(typescript@5.9.3)':
-    dependencies:
-      '@qdrant/js-client-rest': 1.17.0(typescript@5.9.3)
-      dotenv: 17.3.1
-      zod: 4.3.6
-    transitivePeerDependencies:
-      - typescript
-
   '@rolldown/pluginutils@1.0.0-beta.47': {}
 
   '@rollup/rollup-android-arm-eabi@4.55.1':
@@ -7151,11 +7025,6 @@ snapshots:
     dependencies:
       '@scalar/core': 0.3.28
       hono: 4.11.3
-
-  '@scalar/hono-api-reference@0.9.30(hono@4.11.8)':
-    dependencies:
-      '@scalar/core': 0.3.28
-      hono: 4.11.8
 
   '@scalar/types@0.5.4':
     dependencies:
@@ -7910,160 +7779,6 @@ snapshots:
       normalize-path: 3.0.0
       picomatch: 2.3.1
 
-  api@file:apps/api(@bull-board/ui@6.19.0)(@langchain/core@1.1.27(openai@6.22.0(ws@8.18.3)(zod@4.3.5)))(@orpc/contract@1.13.2)(@types/pg@8.16.0)(fastify@5.6.2)(kysely@0.28.9)(react-dom@19.2.3(react@19.2.3))(react@19.2.3)(solid-js@1.9.10)(typescript@5.9.3)(ws@8.18.3):
-    dependencies:
-      '@bull-board/api': 6.19.0(@bull-board/ui@6.19.0)
-      '@hono/node-server': 1.19.9(hono@4.11.8)
-      '@langchain/textsplitters': 1.0.1(@langchain/core@1.1.27(openai@6.22.0(ws@8.18.3)(zod@4.3.5)))
-      '@orpc/openapi': 1.13.2(fastify@5.6.2)(ws@8.18.3)
-      '@orpc/server': 1.13.2(fastify@5.6.2)(ws@8.18.3)
-      '@orpc/zod': 1.13.2(@orpc/contract@1.13.2)(@orpc/server@1.13.2(fastify@5.6.2)(ws@8.18.3))(fastify@5.6.2)(ws@8.18.3)(zod@4.3.6)
-      '@repo/db': file:packages/db(@types/pg@8.16.0)(kysely@0.28.9)
-      '@repo/llm': file:packages/llm(ws@8.18.3)
-      '@repo/qdrant': file:packages/qdrant(typescript@5.9.3)
-      '@scalar/hono-api-reference': 0.9.30(hono@4.11.8)
-      better-auth: 1.4.10(drizzle-kit@0.31.8)(drizzle-orm@0.45.1(@types/pg@8.16.0)(kysely@0.28.9)(pg@8.16.3))(pg@8.16.3)(react-dom@19.2.3(react@19.2.3))(react@19.2.3)(solid-js@1.9.10)
-      bullmq: 5.70.1
-      dotenv: 17.3.1
-      drizzle-kit: 0.31.8
-      drizzle-orm: 0.45.1(@types/pg@8.16.0)(kysely@0.28.9)(pg@8.16.3)
-      drizzle-zod: 0.8.3(drizzle-orm@0.45.1(@types/pg@8.16.0)(kysely@0.28.9)(pg@8.16.3))(zod@4.3.6)
-      hono: 4.11.8
-      js-tiktoken: 1.0.21
-      mammoth: 1.11.0
-      nodemailer: 7.0.12
-      pdf-parse: 2.4.5
-      pg: 8.16.3
-      turndown: 7.2.2
-      xlsx: 0.18.5
-      zod: 4.3.6
-    transitivePeerDependencies:
-      - '@aws-sdk/client-rds-data'
-      - '@bull-board/ui'
-      - '@cloudflare/workers-types'
-      - '@electric-sql/pglite'
-      - '@langchain/core'
-      - '@libsql/client'
-      - '@libsql/client-wasm'
-      - '@lynx-js/react'
-      - '@neondatabase/serverless'
-      - '@op-engineering/op-sqlite'
-      - '@opentelemetry/api'
-      - '@orpc/contract'
-      - '@planetscale/database'
-      - '@prisma/client'
-      - '@sveltejs/kit'
-      - '@tanstack/react-start'
-      - '@tidbcloud/serverless'
-      - '@types/better-sqlite3'
-      - '@types/pg'
-      - '@types/sql.js'
-      - '@upstash/redis'
-      - '@vercel/postgres'
-      - '@xata.io/client'
-      - better-sqlite3
-      - bun-types
-      - crossws
-      - expo-sqlite
-      - fastify
-      - gel
-      - knex
-      - kysely
-      - mongodb
-      - mysql2
-      - next
-      - pg-native
-      - postgres
-      - prisma
-      - react
-      - react-dom
-      - solid-js
-      - sql.js
-      - sqlite3
-      - supports-color
-      - svelte
-      - typescript
-      - vitest
-      - vue
-      - ws
-
-  api@file:apps/api(@bull-board/ui@6.19.0)(@langchain/core@1.1.27(openai@6.22.0(ws@8.18.3)(zod@4.3.6)))(@orpc/contract@1.13.2)(@types/pg@8.16.0)(kysely@0.28.9)(react-dom@19.2.3(react@19.2.3))(react@19.2.3)(solid-js@1.9.10)(typescript@5.9.3)(ws@8.18.3):
-    dependencies:
-      '@bull-board/api': 6.19.0(@bull-board/ui@6.19.0)
-      '@hono/node-server': 1.19.9(hono@4.11.8)
-      '@langchain/textsplitters': 1.0.1(@langchain/core@1.1.27(openai@6.22.0(ws@8.18.3)(zod@4.3.6)))
-      '@orpc/openapi': 1.13.2(fastify@5.6.2)(ws@8.18.3)
-      '@orpc/server': 1.13.2(fastify@5.6.2)(ws@8.18.3)
-      '@orpc/zod': 1.13.2(@orpc/contract@1.13.2)(@orpc/server@1.13.2(ws@8.18.3))(ws@8.18.3)(zod@4.3.6)
-      '@repo/db': file:packages/db(@types/pg@8.16.0)(kysely@0.28.9)
-      '@repo/llm': file:packages/llm(ws@8.18.3)
-      '@repo/qdrant': file:packages/qdrant(typescript@5.9.3)
-      '@scalar/hono-api-reference': 0.9.30(hono@4.11.8)
-      better-auth: 1.4.10(drizzle-kit@0.31.8)(drizzle-orm@0.45.1(@types/pg@8.16.0)(kysely@0.28.9)(pg@8.16.3))(pg@8.16.3)(react-dom@19.2.3(react@19.2.3))(react@19.2.3)(solid-js@1.9.10)
-      bullmq: 5.70.1
-      dotenv: 17.3.1
-      drizzle-kit: 0.31.8
-      drizzle-orm: 0.45.1(@types/pg@8.16.0)(kysely@0.28.9)(pg@8.16.3)
-      drizzle-zod: 0.8.3(drizzle-orm@0.45.1(@types/pg@8.16.0)(kysely@0.28.9)(pg@8.16.3))(zod@4.3.6)
-      hono: 4.11.8
-      js-tiktoken: 1.0.21
-      mammoth: 1.11.0
-      nodemailer: 7.0.12
-      pdf-parse: 2.4.5
-      pg: 8.16.3
-      turndown: 7.2.2
-      xlsx: 0.18.5
-      zod: 4.3.6
-    transitivePeerDependencies:
-      - '@aws-sdk/client-rds-data'
-      - '@bull-board/ui'
-      - '@cloudflare/workers-types'
-      - '@electric-sql/pglite'
-      - '@langchain/core'
-      - '@libsql/client'
-      - '@libsql/client-wasm'
-      - '@lynx-js/react'
-      - '@neondatabase/serverless'
-      - '@op-engineering/op-sqlite'
-      - '@opentelemetry/api'
-      - '@orpc/contract'
-      - '@planetscale/database'
-      - '@prisma/client'
-      - '@sveltejs/kit'
-      - '@tanstack/react-start'
-      - '@tidbcloud/serverless'
-      - '@types/better-sqlite3'
-      - '@types/pg'
-      - '@types/sql.js'
-      - '@upstash/redis'
-      - '@vercel/postgres'
-      - '@xata.io/client'
-      - better-sqlite3
-      - bun-types
-      - crossws
-      - expo-sqlite
-      - fastify
-      - gel
-      - knex
-      - kysely
-      - mongodb
-      - mysql2
-      - next
-      - pg-native
-      - postgres
-      - prisma
-      - react
-      - react-dom
-      - solid-js
-      - sql.js
-      - sqlite3
-      - supports-color
-      - svelte
-      - typescript
-      - vitest
-      - vue
-      - ws
-
   argparse@1.0.10:
     dependencies:
       sprintf-js: 1.0.3
@@ -8454,11 +8169,6 @@ snapshots:
     dependencies:
       drizzle-orm: 0.45.1(@types/pg@8.16.0)(kysely@0.28.9)(pg@8.16.3)
       zod: 4.3.5
-
-  drizzle-zod@0.8.3(drizzle-orm@0.45.1(@types/pg@8.16.0)(kysely@0.28.9)(pg@8.16.3))(zod@4.3.6):
-    dependencies:
-      drizzle-orm: 0.45.1(@types/pg@8.16.0)(kysely@0.28.9)(pg@8.16.3)
-      zod: 4.3.6
 
   duck@0.1.12:
     dependencies:
@@ -9215,17 +8925,6 @@ snapshots:
       uuid: 10.0.0
     optionalDependencies:
       openai: 6.22.0(ws@8.18.3)(zod@4.3.5)
-
-  langsmith@0.5.6(openai@6.22.0(ws@8.18.3)(zod@4.3.6)):
-    dependencies:
-      '@types/uuid': 10.0.0
-      chalk: 5.6.2
-      console-table-printer: 2.15.0
-      p-queue: 6.6.2
-      semver: 7.7.4
-      uuid: 10.0.0
-    optionalDependencies:
-      openai: 6.22.0(ws@8.18.3)(zod@4.3.6)
 
   levn@0.4.1:
     dependencies:

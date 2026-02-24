@@ -18,14 +18,22 @@ COPY apps/api ./apps/api
 RUN --mount=type=cache,id=pnpm,target=/root/.local/share/pnpm/store \
     pnpm install --frozen-lockfile
 
-# Build the database package first (dependency)
+# Build workspace packages in dependency order
 RUN pnpm --filter @repo/db build
+RUN pnpm --filter @repo/llm build
+RUN pnpm --filter @repo/qdrant build
 
 # Build the API
 RUN pnpm --filter api build
 
 # Prune dev dependencies for production
-RUN pnpm --filter api --prod deploy /app/pruned
+RUN pnpm --filter api --prod deploy --legacy /app/pruned
+
+# Inject built dist into the deployed workspace packages
+RUN cp -r /app/packages/db/dist /app/pruned/node_modules/@repo/db/dist 2>/dev/null; \
+    cp -r /app/packages/llm/dist /app/pruned/node_modules/@repo/llm/dist 2>/dev/null; \
+    cp -r /app/packages/qdrant/dist /app/pruned/node_modules/@repo/qdrant/dist 2>/dev/null; \
+    true
 
 # ============================================
 # Stage 3: Production - Minimal runtime image
@@ -50,7 +58,7 @@ COPY --chown=apiuser:nodejs packages/db/package.json ./packages/db/package.json
 COPY --from=build --chown=apiuser:nodejs /app/pruned/node_modules ./node_modules
 COPY --from=build --chown=apiuser:nodejs /app/pruned/package.json ./apps/api/package.json
 COPY --from=build --chown=apiuser:nodejs /app/apps/api/dist ./dist
-COPY --from=build --chown=apiuser:nodejs /app/packages/db/dist ./packages/db/dist
+# DB source and drizzle config needed for migrations
 COPY --from=build --chown=apiuser:nodejs /app/packages/db/src ./packages/db/src
 COPY --from=build --chown=apiuser:nodejs /app/packages/db/drizzle ./packages/db/drizzle
 COPY --from=build --chown=apiuser:nodejs /app/packages/db/drizzle.config.ts ./packages/db/drizzle.config.ts

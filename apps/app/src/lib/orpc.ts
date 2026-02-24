@@ -3,7 +3,7 @@ import { createORPCClient } from "@orpc/client";
 import { RPCLink } from "@orpc/client/fetch";
 import { createTanstackQueryUtils } from "@orpc/tanstack-query";
 
-import type { AppRouter } from "api/orpc";
+import type { AppRouter } from "@repo/api/orpc";
 
 const link = new RPCLink({
 	url: `${import.meta.env.VITE_API_URL}/rpc`,

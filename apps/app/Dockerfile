@@ -18,8 +18,10 @@ COPY apps/app ./apps/app
 RUN --mount=type=cache,id=pnpm,target=/root/.local/share/pnpm/store \
     pnpm install --frozen-lockfile
 
-# Build shared packages first
+# Build workspace packages in dependency order
 RUN pnpm --filter @repo/db build
+RUN pnpm --filter @repo/llm build
+RUN pnpm --filter @repo/qdrant build
 RUN pnpm --filter api build
 
 # Build arg for API URL — must be set at build time (Vite bakes it into the bundle)

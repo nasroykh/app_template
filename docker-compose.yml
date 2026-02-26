@@ -55,7 +55,7 @@ services:
       DB_URL: "postgresql://${DB_USER:-app_template_user}:${DB_PASSWORD:-app_template_password}@postgres:5432/${DB_NAME:-app_template_db}?sslmode=disable"
       DB_USER: ${DB_USER:-app_template_user}
       DB_PASSWORD: ${DB_PASSWORD:-app_template_password}
-      DB_HOST: ${DB_HOST:-postgres}
+      DB_HOST: postgres
       DB_PORT: ${DB_PORT:-5432}
       DB_NAME: ${DB_NAME:-app_template_db}
       DB_SSL_MODE: disable

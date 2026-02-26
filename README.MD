@@ -102,7 +102,7 @@ The project includes a **Makefile** for easy Docker management.
 
 ```bash
 # Production setup and deployment
-make env-setup   # Copy .env.docker to .env
+make env-setup   # Copy .env.template to .env
 make validate    # Pre-flight check
 make build       # Build production images
 make up          # Start containers in detached mode

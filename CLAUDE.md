@@ -31,7 +31,7 @@ pnpm skills:symlink:all   # Symlink skills to .claude, .cursor, and .agent direc
 
 ```bash
 # Setup and Deployment
-make env-setup        # Copy .env.docker to .env
+make env-setup        # Copy .env.example to .env
 make validate         # Pre-flight check
 make build            # Build production images
 make up               # Start containers in detached mode

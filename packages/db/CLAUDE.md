@@ -31,4 +31,5 @@ Shared database package using Drizzle ORM + PostgreSQL (`node-postgres` Pool).
 
 1. Create or edit a file in `src/models/`
 2. Export the table from `src/models/schema.ts`
-3. Run `pnpm db:generate` then `pnpm db:migrate`
+3. **Local dev**: Run `pnpm db:generate` then `pnpm db:migrate`
+4. **Docker**: `db:generate` runs automatically during `make build`; `db:migrate` runs automatically on container startup

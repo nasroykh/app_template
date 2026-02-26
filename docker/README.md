@@ -160,7 +160,7 @@ docker-compose logs -f api
 # Run migrations
 docker-compose exec api pnpm --filter @repo/db db:migrate
 
-# Generate migrations
+# Generate migrations (not normally needed — db:generate runs automatically during `make build`)
 docker-compose exec api pnpm --filter @repo/db db:generate
 
 # Open Drizzle Studio
@@ -342,8 +342,7 @@ docker push registry.example.com/app_template_app:latest
 # 4. Deploy on production server
 docker-compose up -d
 
-# 5. Run migrations
-docker-compose exec api pnpm --filter @repo/db db:migrate
+# 5. Migrations run automatically on API container startup — no manual step needed
 
 # 6. Verify health
 docker-compose ps
